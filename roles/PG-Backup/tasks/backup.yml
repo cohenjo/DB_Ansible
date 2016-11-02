@@ -1,0 +1,55 @@
+---
+# identify the instance ID
+
+
+
+# Gather ec2 facts to snapshot example
+- name: Gather facts
+  action: ec2_facts
+
+- name: print instance id
+  action: debug msg="The instanceid is {{ ansible_ec2_instance_id }}"
+
+  # place db into backup mode
+- name: place db into backup mode
+  command: psql -c "SELECT pg_start_backup(' {{ backup_label }}' );"
+  become: yes
+  become_user: postgres
+
+
+# snapshot the disks using the instance ID.
+# Snapshot of volume mounted on device_name attached to instance_id
+- ec2_snapshot:
+    instance_id: "{{ ansible_ec2_instance_id }}"
+    device_name: /dev/sdb
+    region: eu-central-1
+    wait: "{{ should_snap_wait }}"
+    aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+    aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+    description: snapshot of /data from PG-Jony
+  register: snap_data
+
+- ec2_snapshot:
+    instance_id: "{{ ansible_ec2_instance_id }}"
+    device_name: /dev/sdc
+    region: eu-central-1
+    wait: "{{ should_snap_wait }}"
+    aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+    aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+    description: snapshot of /archive from PG-Jony
+  register: snap_archive
+
+- name: print volume name
+  action: debug msg="The volume is {{ snap_archive }}"
+#    "msg": "The volume is {u'volume_size': 50, u'changed': True, u'snapshot_id': u'snap-1ed651f5', u'volume_id': u'vol-97a7990d', u'tags': {}}"
+
+- name: print volume name
+  action: debug msg="The volume is {{ snap_data }}"
+
+# exit backup mode
+- name: exit backup mode
+  command: psql -c 'SELECT pg_stop_backup();'
+  become: yes
+  become_user: postgres
+
+#

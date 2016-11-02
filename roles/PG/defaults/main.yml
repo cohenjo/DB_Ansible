@@ -1,0 +1,26 @@
+---
+
+PG_packages:
+  - postgresql96-server
+  - postgresql96-contrib
+  - postgresql96-libs
+  - postgresql96-python
+  - pgbouncer
+  - repmgr96
+  - pgbadger
+  - barman
+  - barman-cli
+  - bzip2
+  - gzip
+  - xz-utils
+  - logrotate
+
+postgres_user: postgres
+
+created_users:
+  - name: barman
+    password: barman_123
+  - name: repmgr
+    password: repmgr_123
+  - name: maas_admin
+    password: maas_admin_123

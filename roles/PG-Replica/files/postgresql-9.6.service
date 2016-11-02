@@ -1,0 +1,5 @@
+# Include the default config:
+.include /usr/lib/systemd/system/postgresql-9.6.service
+
+[Service]
+Environment=PGDATA=/DATA/9.6/data

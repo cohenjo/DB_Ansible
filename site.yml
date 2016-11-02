@@ -1,0 +1,8 @@
+---
+# file: site.yml
+- include: infra.yml
+- include: dbservers.yml
+- include: postgresql-deploy.yml
+- include: mongo-deploy.yml
+- include: vertica-deploy.yml
+- include: idol.yml

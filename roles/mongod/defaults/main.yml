@@ -1,0 +1,72 @@
+---
+
+# The global variable file mongodb installation
+mongodb_version: "3.2"
+
+mongod_iface: '{{ ansible_default_ipv4.interface }}'
+
+mongodb_replication_oplogsize: 1024
+
+## net Options
+mongodb_net_bindip: 127.0.0.1                    # Comma separated list of ip addresses to listen on
+mongodb_net_http_enabled: false                  # Enable http interface
+mongodb_net_ipv6: false                          # Enable IPv6 support (disabled by default)
+mongodb_net_maxconns: 65536                      # Max number of simultaneous connections
+mongodb_net_port: 27017                          # Specify port number
+
+## processManagement Options
+mongodb_processmanagement_fork: false            # Fork server process
+
+
+## storage Options
+mongodb_storage_dbpath: /data/db                 # Directory for datafiles
+# The storage engine for the mongod database. Available values:
+# 'mmapv1', 'wiredTiger'
+mongodb_storage_engine: "{{ 'mmapv1' if mongodb_version[0:3] == '3.0' else 'wiredTiger' }}"
+# mmapv1 specific options
+mongodb_storage_smallfiles: false                # Very useful for non-data nodes
+
+mongodb_storage_journal_enabled: true            # Enable journaling
+mongodb_storage_prealloc: true                   # Enable data file preallocation
+
+## systemLog Options
+## The destination to which MongoDB sends all log output. Specify either 'file' or 'syslog'.
+## If you specify 'file', you must also specify mongodb_systemlog_path.
+mongodb_systemlog_destination: "file"
+mongodb_systemlog_logappend: true                                        # Append to logpath instead of over-writing
+mongodb_systemlog_path: /var/log/mongodb/{{ mongodb_daemon_name }}.log   # Log file to send write to instead of stdout
+
+## replication Options
+mongodb_replication_replset: SAW                     # Enable replication <setname>[/<optionalseedhostlist>]
+mongodb_replication_replindexprefetch: "all"      # specify index prefetching behavior (if secondary) [none|_id_only|all]
+mongodb_replication_oplogsize: 1024               # specifies a maximum size in megabytes for the replication operation log
+
+mongodb_security_authorization: "enabled"
+mongodb_users:
+  - {
+    name: testUser,
+    password: passw0rd,
+    roles: readWrite,
+    database: app_development
+}
+
+# names and passwords for administrative users
+mongodb_user_admin_name: siteUserAdmin
+mongodb_user_admin_password: passw0rd
+
+mongodb_root_admin_name: siteRootAdmin
+mongodb_root_admin_password: passw0rd
+
+mongodb_root_backup_name: "backupuser"
+mongodb_root_backup_password: "passw0rd"
+
+
+# Log rotation
+mongodb_logrotate: true                             # Rotate mongodb logs.
+mongodb_logrotate_options:
+  - compress
+  - copytruncate
+  - daily
+  - dateext
+  - rotate 7
+  - size 10M

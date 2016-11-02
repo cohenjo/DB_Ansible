@@ -1,0 +1,62 @@
+---
+
+
+
+- name: create the maas admin user.
+  postgresql_user:
+   name: maas_admin
+   password: maas_admin_123
+   role_attr_flags: CREATEDB,NOSUPERUSER
+  become: yes
+  become_user: postgres
+
+- name: create the barman user.
+  postgresql_user:
+   name: barman
+   password: barman_123
+   role_attr_flags: REPLICATION,SUPERUSER
+  become: yes
+  become_user: postgres
+
+- name: create the repmgr user.
+  postgresql_user:
+   name: repmgr
+   password: repmgr_123
+   role_attr_flags: REPLICATION
+  become: yes
+  become_user: postgres
+
+#
+# - name: GRANT ALL PRIVILEGES ON SCHEMA public TO maas_admin
+#   postgresql_privs: >
+#     db=developer_ems
+#     privs=ALL
+#     type=schema
+#     objs=public
+#     role=maas_admin
+#
+- name: add pg_trgm.
+  postgresql_ext:
+    name: pg_trgm
+    db: template1
+    login_host: localhost
+    login_password: postgres
+    login_user: postgres
+  become: yes
+  become_user: postgres
+
+- name: create the EMS db
+  postgresql_db: name=developer_ems
+                 encoding='UTF-8'
+                 template='template0'
+  become: yes
+  become_user: postgres
+
+  #
+  # - name: set wal_level to hot_standby in postgresql.conf
+  #   pg_config:
+  #     name: wal_level
+  #     value: minimal
+  #     state: present
+  #   become: yes
+  #   become_user: postgres

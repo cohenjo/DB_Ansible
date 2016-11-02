@@ -1,0 +1,8 @@
+/var/log/postgresql/repmgr-9.6.log {
+    missingok
+    compress
+    rotate 52
+    maxsize 100M
+    weekly
+    create 0600 postgres postgres
+}

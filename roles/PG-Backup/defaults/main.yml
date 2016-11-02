@@ -1,0 +1,20 @@
+---
+
+PG_packages:
+  - postgresql96-server
+  - postgresql96-contrib
+  - postgresql96-libs
+  - postgresql96-python
+  - pgbouncer
+  - repmgr96
+  - pgbadger
+  - barman
+  - barman-cli
+  - bzip2
+  - gzip
+  - xz-utils
+
+build_replica: no
+backup_label: PG-test
+region: eu-central-1
+should_snap_wait: no

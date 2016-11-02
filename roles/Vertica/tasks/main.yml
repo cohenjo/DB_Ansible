@@ -1,0 +1,8 @@
+---
+
+- name: creating a the maas_vertica user with password
+  vertica_user: name=maas_admin password=md5<encrypted_password> db=CIDB2 state=present
+# select 'md5'||md5('<user_password><user_name>').
+
+- name: creating the maas_reports with password
+  vertica_user: name=maas_reports password=md5<encrypted_password> db=CIDB2 state=present

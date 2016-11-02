@@ -1,0 +1,7 @@
+---
+# file: roles/PG/vars/main.yml
+vars:
+  pg_env:
+    PATH: /usr/pgsql-9.6/bin:$PATH
+    LOG_DIR: /var/log/maas/pg_log
+    PGDATA: /DATA/9.6/data

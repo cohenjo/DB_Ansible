@@ -1,0 +1,66 @@
+---
+
+- name: Mount /DATA device
+  mount:
+    name: /DATA
+    src: /dev/xvdb
+    fstype: xfs
+    opts: 'nobarrier,noatime,noexec,nodiratime'
+    state: present
+  become: yes
+  become_user: root
+
+- name: mount all
+  command: /usr/bin/mount -a
+  become: yes
+  become_user: root
+
+- name: copy over configuration file
+  copy: src=postgresql-9.6.service dest="/etc/systemd/system/postgresql-9.6.service"
+  become: yes
+  become_user: root
+
+- name: reload the systemd daemon
+  command: /usr/bin/systemctl daemon-reload
+  become: yes
+  become_user: root
+
+
+# - name: mount all
+#   command:  /usr/bin/mount -a
+#   become: yes
+#   become_user: root
+
+
+- name: copy over repmgr configuration files
+  copy: src=repmgr dest="/var/lib/pgsql/repmgr" owner=postgres group=postgres mode=0644
+  become: yes
+  become_user: postgres
+
+- name: copy over repmgr configuration files
+  copy: src=repmgr/pgbouncer.ini dest="/etc/pgbouncer/pgbouncer.ini" owner=postgres group=postgres mode=0644
+  become: yes
+  become_user: root
+
+- name: copy scripts folder
+  copy: src=scripts dest="/var/lib/pgsql/scripts" owner=postgres group=postgres
+  become: yes
+  become_user: postgres
+
+# - name: start the PG service
+# - systemd:
+#     name: postgresql-9.6.service
+#     state: started
+#     enabled: False
+#   become: yes
+#   become_user: root
+- name: /bin/systemctl start postgresql-9.6
+  command: /bin/systemctl start postgresql-9.6
+  args:
+    creates: "{{pg_env.PGDATA}}/postmaster.pid"
+  become: yes
+  become_user: root
+#
+# - include: db_configure.yml
+#   when: master == 'yes'
+#   tags: [postgres, pg-configure]

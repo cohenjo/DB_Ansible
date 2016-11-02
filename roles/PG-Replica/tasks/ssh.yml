@@ -1,0 +1,22 @@
+---
+
+- name: Set up authorized_keys for the barman user
+  authorized_key: user=barman key="{{ item }}"
+  with_file:
+    - ssh/id_rsa.pub
+  become: yes
+  become_user: root
+
+- name: Set up authorized_keys for the postgres user
+  authorized_key: user=postgres key="{{ item }}"
+  with_file:
+    - ssh/id_rsa.pub
+  become: yes
+  become_user: root
+
+- name: Set up authorized_keys for the root user
+  authorized_key: user=root key="{{ item }}"
+  with_file:
+    - ssh/id_rsa.pub
+  become: yes
+  become_user: root

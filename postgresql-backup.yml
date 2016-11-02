@@ -1,0 +1,33 @@
+---
+# file: postgresql-backup.yml
+# - hosts: postgres
+- hosts: tag_Name_PG_Jony
+  remote_user: centos
+  # private_key_file: '/Users/cohenjo/HPEOneDrive/OneDrive - Hewlett Packard Enterprise/Documents/Amazon AWS/Tunnelblick/mgmt-eu.pem'
+  vars:
+    master: yes
+    build_replica: yes
+    should_snap_wait: yes
+    pg_env:
+      PATH: /usr/pgsql-9.6/bin:/bin:$PATH
+      LOG_DIR: /var/log/maas/pg_log
+      PGDATA: /DATA/9.6/data
+  environment: "{{pg_env}}"
+  roles:
+    - PG-Backup
+
+- hosts: PG-Replica-launched
+  remote_user: centos
+  vars:
+    master: no
+    pg_env:
+      PATH: /usr/pgsql-9.6/bin:/bin:$PATH
+      LOG_DIR: /var/log/maas/pg_log
+      PGDATA: /DATA/9.6/data
+  environment: "{{pg_env}}"
+  vars_files:
+    - group_vars/PG-Replica-launched
+  roles:
+    - common
+    - PG
+    - { role: ansible-repmgr , become: yes, become_user: root}

@@ -1,0 +1,11 @@
+[postgres]
+pgdev ansible_host=192.168.99.100 ansible_port=22
+
+[tag_Name_PG_Jony]
+10.250.2.108
+
+[tag_Role_PG_Barman]
+10.250.2.75
+
+[tag_Role_PG_Replica]
+10.250.2.147
