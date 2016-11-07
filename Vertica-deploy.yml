@@ -1,6 +1,9 @@
+---
 - hosts: localhost
   connection: local
   gather_facts: False
+  vars:
+    region: eu-central-1
 
   tasks:
     - name: spin up replica host
@@ -11,21 +14,16 @@
         group_id: ['sg-066df76e','sg-a06d28c8']
         count: 3
         region: "{{ region }}"
-        instance_type: t2.medium
+        instance_type: m4.4xlarge
         image: ami-39946a56
         wait: yes
         wait_timeout: 500
         instance_tags:
-          db: postgres
-          role: PG-Replica
-          Name: PG-Jony
+          db: Vertica
+          role: vertica
+          Name: VRT-Jony
         volumes:
           - device_name: /dev/sdb
-            snapshot: "{{ snap_data.snapshot_id }}"
-            volume_size: 50
-            delete_on_termination: true
-          - device_name: /dev/sdc
-            snapshot: "{{ snap_archive.snapshot_id }}"
             volume_size: 50
             delete_on_termination: true
         monitoring: no
@@ -34,32 +32,32 @@
       register: ec2
 
     - name: print instance info
-      action: debug msg="Instance info  {{ ec2 }}"
+      action: debug msg="Instance info  {{ ec2.instances }}"
 
 
     - name: Add new instance to host group
-      add_host: hostname={{ item.public_ip }} groupname=Vertica-launched
-      with_items: '{{ec2.instances}}'
+      add_host: name={{ item.private_ip }} groups=vrtl
+      with_items: "{{ ec2.instances }}"
 
     - name: Wait for SSH to come up
       wait_for: host={{ item.public_ip }} port=22 delay=60 timeout=320 state=started
       with_items: '{{ec2.instances}}'
 
-# 
-# - name: run the database migrations
-#   command: bundle exec rake db:migrate
-#   run_once: true
+    - debug: msg={{ item }}
+      with_items: "{{ groups['vrtl'] }}"
 
-- hosts: Vertica-launched
+
+- hosts: vrtl
   name: deploy
   user: centos
   gather_facts: true
   vars:
     vertica_database_name: CIDB2
-    vertica_package_location: /tmp/vertica.rpm
+    vertica_package_location: /tmp/vertica-7.2.3-0.x86_64.RHEL6.rpm
   roles:
     - {role: ansible-vertica,
-      vertica_group="{{groups['vertica']}}",
-      vertica_cluster="{{ec2.instances}}",
+      vertica_group: "{{ groups[vrtl]}}",
+      vertica_cluster: "{{ ec2.instances }}",
+      become: yes, become_user: root,
       tags: [vertica]}
     - vertica

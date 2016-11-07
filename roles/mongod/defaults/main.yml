@@ -1,7 +1,10 @@
 ---
 
+ansible_managed: true
 # The global variable file mongodb installation
+mongodb_major_version: "3.2"
 mongodb_version: "3.2"
+mongodb_user: mongo
 
 mongod_iface: '{{ ansible_default_ipv4.interface }}'
 
@@ -19,10 +22,12 @@ mongodb_processmanagement_fork: false            # Fork server process
 
 
 ## storage Options
-mongodb_storage_dbpath: /data/db                 # Directory for datafiles
+# The directory prefix where the database files would be stored
+mongodb_datadir_prefix: /data
+mongodb_storage_dbpath: "{{ mongodb_datadir_prefix }}/db"                 # Directory for datafiles
 # The storage engine for the mongod database. Available values:
-# 'mmapv1', 'wiredTiger'
-mongodb_storage_engine: "{{ 'mmapv1' if mongodb_version[0:3] == '3.0' else 'wiredTiger' }}"
+# 'mmapv1', 'wiredTiger','inMemory'
+mongodb_storage_engine: mmapv1
 # mmapv1 specific options
 mongodb_storage_smallfiles: false                # Very useful for non-data nodes
 
@@ -34,12 +39,13 @@ mongodb_storage_prealloc: true                   # Enable data file preallocatio
 ## If you specify 'file', you must also specify mongodb_systemlog_path.
 mongodb_systemlog_destination: "file"
 mongodb_systemlog_logappend: true                                        # Append to logpath instead of over-writing
-mongodb_systemlog_path: /var/log/mongodb/{{ mongodb_daemon_name }}.log   # Log file to send write to instead of stdout
+mongodb_systemlog_path: /var/log/mongo/{{ mongodb_user }}.log   # Log file to send write to instead of stdout
 
 ## replication Options
 mongodb_replication_replset: SAW                     # Enable replication <setname>[/<optionalseedhostlist>]
 mongodb_replication_replindexprefetch: "all"      # specify index prefetching behavior (if secondary) [none|_id_only|all]
-mongodb_replication_oplogsize: 1024               # specifies a maximum size in megabytes for the replication operation log
+# mongodb_replication_oplogsize: 1024               # specifies a maximum size in megabytes for the replication operation log
+mongodb_replication_oplogsize: 128               # specifies a maximum size in megabytes for the replication operation log
 
 mongodb_security_authorization: "enabled"
 mongodb_users:

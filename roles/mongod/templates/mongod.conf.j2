@@ -1,65 +1,47 @@
 # mongo.conf
 # {{ ansible_managed }}
 
-smallfiles={{ mongod_smallfiles }}
-
-#where to log
-logpath=/var/log/mongo/mongod-{{ inventory_hostname }}.log
-
-logappend=true
-# Verbose logging output.
-#verbose = true
-
-# fork and run in background
-
-
 net:
-  bindIp: {{ mongodb_net_bindip }}
+  bindIp: {{ inventory_hostname }},127.0.0.1
   http:
     enabled: {{ mongodb_net_http_enabled | to_nice_json }}
   ipv6: {{ mongodb_net_ipv6 | to_nice_json }}
   maxIncomingConnections: {{ mongodb_net_maxconns }}
-  port: {{ mongod_port }}
+  port: {{ mongodb_net_port }}
 
 processManagement:
   fork: {{ mongodb_processmanagement_fork | to_nice_json}}
+  pidFilePath: /var/run/mongo/mongod-{{ inventory_hostname }}.pid
 
 security:
   authorization: {{ mongodb_security_authorization }}
   {% if mongodb_replication_replset and mongodb_security_authorization == 'enabled' -%}
-  keyFile: {{ mongodb_security_keyfile }}
+  keyFile: {{ mongodb_datadir_prefix }}/keyfile
   {% endif %}
-
-dbpath={{ mongodb_datadir_prefix }}mongo-{{ inventory_hostname }}
-keyFile={{ mongodb_datadir_prefix }}/secret
-
-# location of pidfile
-pidfilepath = /var/run/mongo/mongod-{{ inventory_hostname }}.pid
-
 
 # maximum size in megabytes for replication operation log
 replication:
   oplogSizeMB: {{ mongodb_replication_oplogsize | int }}
-  replSetName: {{ mongod_replset_name }}
+  replSetName: {{ mongodb_replication_replset }}
 
 
-  storage:
-    dbPath: {{ mongodb_storage_dbpath }}
-    {% if mongodb_major_version|float >= 3.0 -%}
-    engine: {{ mongodb_storage_engine }}
-    {% endif -%}
-    journal:
-      enabled: {{ mongodb_storage_journal_enabled | to_nice_json }}
-    {% if mongodb_storage_engine == 'mmapv1' -%}
-    mmapv1:
-      smallFiles: {{ mongodb_storage_smallfiles | to_nice_json }}
-    {% endif -%}
-    {% if mongodb_major_version == '2.6' -%}
-    preallocDataFiles: {{ mongodb_storage_prealloc | to_nice_json }}
+storage:
+  dbPath: {{ mongodb_storage_dbpath }}
+  {% if mongodb_major_version|float >= 3.0 -%}
+  engine: {{ mongodb_storage_engine }}
+  {% endif -%}
+  journal:
+    enabled: {{ mongodb_storage_journal_enabled | to_nice_json }}
+  {% if mongodb_storage_engine == 'mmapv1' -%}
+  mmapv1:
     smallFiles: {{ mongodb_storage_smallfiles | to_nice_json }}
-    {% endif %}
+  {% endif -%}
+  {% if mongodb_major_version == '2.6' -%}
+  preallocDataFiles: {{ mongodb_storage_prealloc | to_nice_json }}
+  smallFiles: {{ mongodb_storage_smallfiles | to_nice_json }}
+  {% endif %}
 
-  systemLog:
-    destination: {{ mongodb_systemlog_destination }}
-    logAppend: {{ mongodb_systemlog_logappend | to_nice_json }}
-    path: {{ mongodb_systemlog_path }}
+systemLog:
+  destination: {{ mongodb_systemlog_destination }}
+  logAppend: {{ mongodb_systemlog_logappend | to_nice_json }}
+  path: {{ mongodb_systemlog_path }}

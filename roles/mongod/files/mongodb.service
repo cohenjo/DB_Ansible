@@ -3,8 +3,18 @@ Description=An object/document-oriented database
 Documentation=man:mongod(1)
 
 [Service]
-User=mongodb
-ExecStart=/usr/bin/mongod --config /etc/mongod.conf
+User=mongo
+ExecStart=/bin/mongod --config /etc/mongod.conf
+# (file size)
+LimitFSIZE=infinity
+# (cpu time)
+LimitCPU=infinity
+# (virtual memory size)
+LimitAS=infinity
+# (open files)
+LimitNOFILE=64000
+# (processes/threads)
+LimitNPROC=64000
 
 [Install]
 WantedBy=multi-user.target

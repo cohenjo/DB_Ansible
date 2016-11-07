@@ -1,5 +1,7 @@
 ---
 # This role deploys the mongod processes and sets up the replication set.
+- include: host.yml
+  tags: [host]
 
 - name: Create the hosts file for all machines
   template: src=hosts.j2 dest=/etc/hosts
@@ -7,97 +9,85 @@
 - name: Create the repository for 10Gen
   copy: src=10gen.repo.j2 dest=/etc/yum.repos.d/10gen.repo
 
-- name: Create the data directory for the namenode metadata
-  file: path={{ mongodb_datadir_prefix }} owner=mongod group=mongod state=directory
 
-- name: Create the mongod user
-  user: name=mongod comment="MongoD"
+- name: create filesystem for DATA
+  filesystem: fstype=xfs dev=/dev/xvdb
+  become: yes
+  become_user: root
 
-- name: Create the data directory for the namenode metadata
-  file: path={{ mongodb_datadir_prefix }} owner=mongod group=mongod state=directory
+- name: Mount /DATA device
+  mount:
+    name: /DATA
+    src: /dev/xvdb
+    fstype: xfs
+    opts: 'nobarrier,noatime,noexec,nodiratime'
+    state: present
+  become: yes
+  become_user: root
+
+- name: mount all
+  command: /usr/bin/mount -a
+  become: yes
+  become_user: root
 
 - name: Install the mongodb package
-  yum: name={{ item }} state=installed
+  package: name={{ item }} state=latest
   with_items:
    - libselinux-python
-   - mongo-10gen
-   - mongo-10gen-server
+   - mongodb-org
+   - mongodb-org-server
+   - mongodb-org-shell
+   - mongodb-org-tools
    - bc
    - python-pip
    - pymongo
 
+
+- name: Create the mongo user
+  user: name={{ mongodb_user }} comment="Mongo user"
+
+- name: Create the data directory
+  file: path={{ mongodb_datadir_prefix }}/db owner={{ mongodb_user }} group={{ mongodb_user }} state=directory
+
 - name: Install the latest pymongo package
   pip: name=pymongo state=latest use_mirrors=no
 
-- name: create data directory for mongodb
-  file: path={{ mongodb_datadir_prefix }}/mongo-{{ inventory_hostname }} state=directory owner=mongod group=mongod
-  delegate_to: '{{ item }}'
-  with_items: groups.replication_servers
-
 - name: create log directory for mongodb
-  file: path=/var/log/mongo state=directory owner=mongod group=mongod
+  file: path=/var/log/mongo state=directory owner={{ mongodb_user }} group={{ mongodb_user }}
 
 - name: create run directory for mongodb
-  file: path=/var/run/mongo state=directory owner=mongod group=mongod
-
-- name: Create the mongodb startup file
-  template: src=mongod.j2 dest=/etc/init.d/mongod-{{ inventory_hostname }} mode=0655
-  delegate_to: '{{ item }}'
-  with_items: groups.replication_servers
-
-
-- name: Create the mongodb configuration file
-  template: src=mongod.conf.j2 dest=/etc/mongod-{{ inventory_hostname }}.conf
-  delegate_to: '{{ item }}'
-  with_items: groups.replication_servers
+  file: path=/var/run/mongo state=directory owner={{ mongodb_user }} group={{ mongodb_user }}
 
 - name: Copy the keyfile for authentication
-  copy: src=secret dest={{ mongodb_datadir_prefix }}/secret owner=mongod group=mongod mode=0400
+  copy: src=secret dest={{ mongodb_datadir_prefix }}/keyfile owner={{ mongodb_user }} group={{ mongodb_user }} mode=0400
 
+# until I manage to integrate selinux with my deployment
+- name: selinux permissive mode
+  selinux: policy=targeted state=permissive
+# - selinux: state=disabled
+# need: semanage port -a -t mongod_port_t -p tcp 27017
+# also need storage paths.
+# maybe use: audit2why
+# see: https://www.andersoncalixto.com.br/2015/07/installing-mongodb-on-rhel7-with-selinux-enabled/
 
-- name: Start the mongodb service
-  command: creates=/var/lock/subsys/mongod-{{ inventory_hostname }} /etc/init.d/mongod-{{ inventory_hostname }} start
-  delegate_to: '{{ item }}'
-  with_items: groups.replication_servers
+- name: Create the mongodb configuration file
+  template: src=mongod.conf.j2 dest=/etc/mongod.conf
 
-- name: Add systemd configuration if present
+- name: Add systemd configuration
   copy: src=mongodb.service dest=/lib/systemd/system/mongodb.service owner=root group=root mode=0640
-  when: mongodb_is_systemd
 
 - name: Add symlink for systemd
   file: src=/lib/systemd/system/mongodb.service dest=/etc/systemd/system/multi-user.target.wants/mongodb.service state=link
-  when: mongodb_is_systemd
-  notify: reload systemd
 
-
-- name: Include replication and auth configuration
-  include: replication_init_auth.yml
-  when: ( mongodb_replication_replset
-        and mongodb_replication_replset != ''
-        and mongodb_security_authorization == 'enabled'
-        and mongodb_master is defined and mongodb_master )
-  tags: [mongodb]
-
+- name: reload the systemd daemon and start mongodb
+  systemd:
+    name: mongodb
+    state: started
+    daemon_reload: yes
 
 - name: Create the file to initialize the mongod replica set
   template: src=repset_init.j2 dest=/tmp/repset_init.js
 
-- name: Pause for a while
-  pause: seconds=20
-
 - name: Initialize the replication set
-  shell: /usr/bin/mongo --port "{{ mongod_port }}" /tmp/repset_init.js
-
-
-- name: Include replication and auth configuration
-  include: replication_init_auth.yml
-  when: ( mongodb_replication_replset
-        and mongodb_replication_replset != ''
-        and mongodb_security_authorization == 'enabled'
-        and mongodb_master is defined and mongodb_master )
-  tags: [mongodb]
-
-- name: Include replication configuration
-  include: replication.yml
-  when: mongodb_replication_replset and mongodb_replication_replset != ''
-  tags: [mongodb]
+  shell: /usr/bin/mongo admin /tmp/repset_init.js
+  run_once: true

@@ -1,23 +1,23 @@
 ---
-- name: Move back mongod.conf
-  template: src=mongod_init.conf.j2 dest=/etc/mongod.conf owner=root group=root mode=0644
-
-- name: Restart mongodb service
-  service: name={{ mongodb_daemon_name }} state=restarted
-  when: mongodb_manage_service
-
-- name: wait MongoDB port is listening
-  wait_for: host=127.0.0.1 port="{{ mongodb_net_port }}" delay=5 state=started
-
-- name: get pid of mongodb for non daemon mode
-  shell: "pidof mongod"
-  register: pidof_mongod
-  when: mongodb_manage_service == false
-  ignore_errors: yes
-
-- name: start mongodb daemon
-  shell: "LC_ALL=C /usr/bin/mongod --config /etc/mongod.conf --fork"
-  when: mongodb_manage_service == false and pidof_mongod.rc == 1
+# - name: Move back mongod.conf
+#   template: src=mongod_init.conf.j2 dest=/etc/mongod.conf owner=root group=root mode=0644
+#
+# - name: Restart mongodb service
+#   service: name={{ mongodb_daemon_name }} state=restarted
+#   when: mongodb_manage_service
+#
+# - name: wait MongoDB port is listening
+#   wait_for: host=127.0.0.1 port="{{ mongodb_net_port }}" delay=5 state=started
+#
+# - name: get pid of mongodb for non daemon mode
+#   shell: "pidof mongod"
+#   register: pidof_mongod
+#   when: mongodb_manage_service == false
+#   ignore_errors: yes
+#
+# - name: start mongodb daemon
+#   shell: "LC_ALL=C /usr/bin/mongod --config /etc/mongod.conf --fork"
+#   when: mongodb_manage_service == false and pidof_mongod.rc == 1
 
 
 - name: create backup user "backupuser", siteUserAdmin, siteRootAdmin
@@ -45,13 +45,13 @@
       roles: "root"
       }
   no_log: true
+#
+# - name: Move back mongod.conf
+#   template: src=mongod.conf.j2 dest=/etc/mongod.conf owner=root group=root mode=0644
 
-- name: Move back mongod.conf
-  template: src=mongod.conf.j2 dest=/etc/mongod.conf owner=root group=root mode=0644
-
-- name: Restart mongodb service
-  service: name={{ mongodb_daemon_name }} state=restarted
-  when: mongodb_manage_service
+# - name: Restart mongodb service
+#   service: name={{ mongodb_daemon_name }} state=restarted
+#   when: mongodb_manage_service
 
 - name: create normal users with replicaset
   mongodb_user:

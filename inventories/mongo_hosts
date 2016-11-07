@@ -1,15 +1,6 @@
 #The site wide list of mongodb servers
 
-
-[mongo_master]
-192.158.56.2 mongodb_master=True # it is't a really master of MongoDB replica set,
-                                 # use this variable for replica set init only
-                                 # or when master is moved from initial master node
-
-[mongo_replicas]
-192.168.56.3
-192.168.56.4
-
-[mongo:children]
-mongo_master
-mongo_replicas
+[mngl]
+10.250.2.5
+10.250.2.6
+10.250.2.7

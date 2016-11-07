@@ -1,9 +1,10 @@
 - hosts: localhost
   connection: local
   gather_facts: False
-
+  vars:
+    region: eu-central-1
   tasks:
-    - name: spin up replica host
+    - name: spin up mongo replica hosts
       ec2:
         aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
         aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
@@ -20,11 +21,6 @@
           Name: MNG-Jony
         volumes:
           - device_name: /dev/sdb
-            snapshot: "{{ snap_data.snapshot_id }}"
-            volume_size: 50
-            delete_on_termination: true
-          - device_name: /dev/sdc
-            snapshot: "{{ snap_archive.snapshot_id }}"
             volume_size: 50
             delete_on_termination: true
         monitoring: no
@@ -36,33 +32,29 @@
       action: debug msg="Instance info  {{ ec2 }}"
 
     - name: Add new instance to host group
-      add_host: hostname={{ item.public_ip }} groupname=mongo-launched
+      add_host: name={{ item.private_ip }} groupname=mngl
       with_items: '{{ec2.instances}}'
+
     - name: Add one host as the "master"
-      add_host: hostname={{ item.public_ip }} groupname=mongo_master
-      with_items: '{{ec2.instances[0]}}'
+      add_host: hostname={{ item.private_ip }} groupname=mongo_master
+      with_items: '{{ ec2.instances }}'
+      run_once: true
 
     - name: Wait for SSH to come up
-      wait_for: host={{ item.public_ip }} port=22 delay=60 timeout=320 state=started
+      wait_for: host={{ item.private_ip }} port=22 delay=60 timeout=320 state=started
       with_items: '{{ec2.instances}}'
 
-- hosts: mongo-launched
+    - debug: msg={{ item }}
+      with_items: "{{ groups['mngl'] }}"
+
+    # - set_fact: mongodb_login_host="{{ ec2.instances[0].private_ip }}"
+
+- hosts: mngl
   name: deploy
   user: centos
   gather_facts: true
   vars:
     # It's a 'master' node
-    mongodb_login_host: 192.168.56.2
-    # mongodb_replication_params should be configured on each replica set node
-    mongodb_replication_params:
-    - { host_name: 192.168.56.2, host_port: "{{ mongodb_net_port }}", host_type: replica }
-    # host_type can be replica(default) and arbiter
+    mongodb_login_host: "{{ groups['mngl'][0] }}"
   roles:
-    # - {role: ansible-vertica,
-    #   vertica_group="{{groups['vertica']}}",
-    #   vertica_cluster="{{ec2.instances}}",
-    #   tags: [vertica]}
-
-- hosts: mongo_servers
-  roles:
-  - role: mongod
+    - {role: mongod,become: yes, become_user: root, tags: [mongo]}
