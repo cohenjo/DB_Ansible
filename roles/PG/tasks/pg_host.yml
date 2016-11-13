@@ -1,0 +1,67 @@
+---
+
+
+- name: create filesystem for DATA
+  filesystem: fstype=xfs dev=/dev/xvdb
+
+- name: create filesystem for pg_xlog
+  filesystem: fstype=xfs dev=/dev/xvdc
+
+- name: Mount /DATA device
+  mount:
+    name: /DATA
+    src: /dev/xvdb
+    fstype: xfs
+    opts: 'nobarrier,noatime,noexec,nodiratime'
+    state: present
+
+- name: mount all
+  command: /usr/bin/mount -a
+
+- name: "Create {{PGDATA}} folder"
+  file:
+    path: "{{pg_env.PGDATA}}"
+    state: directory
+    owner: postgres
+    group: postgres
+
+- name: install postgres repo
+  yum:
+    name: https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat96-9.6-3.noarch.rpm
+    state: present
+
+- name: install postgres
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ PG_packages }}"
+
+
+- name: "set hugepages to {{(ansible_memtotal_mb/3)|int}} pages"
+  sysctl:
+    name: vm.nr_hugepages
+    value: "{{(ansible_memtotal_mb/4)|int}}"
+    state: present
+
+- name: Create log folder
+  file:
+    path: /var/log/maas/pg_log
+    state: directory
+    owner: postgres
+    group: postgres
+
+- name: Create /var/lib/pgsql/pg_stat_tmp folder
+  file:
+    path: /var/lib/pgsql/pg_stat_tmp
+    state: directory
+    mode: 01777
+    owner: postgres
+    group: postgres
+
+- name: Mount up /var/lib/pgsql/pg_stat_tmp
+  mount:
+    name: /var/lib/pgsql/pg_stat_tmp
+    src: 'tmpfs'
+    fstype: tmpfs
+    opts: 'size=2G,uid=postgres,gid=postgres'
+    state: present

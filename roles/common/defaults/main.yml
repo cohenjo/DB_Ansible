@@ -1,0 +1,20 @@
+---
+
+io_sched: deadline
+io_rh: 2048
+
+thp_policy: always
+
+common_packages:
+ - libselinux-python
+ - chrony
+
+ulimits:
+  - {domain: "*", type: "-", litem: "nproc", value: 64000}
+  - {domain: "*", type: "-", litem: "nofile", value: 65536}
+
+kernel_params:
+  - {name: "vm.overcommit_memory", value: 2 }
+  - {name: kernel.shmmax, value: "{{ansible_memtotal_mb*512*1024}}"}
+  - {name: kernel.shmall, value: "{{ansible_memtotal_mb*256}}"}
+  - {name: fs.file-max,   value: 40000 }

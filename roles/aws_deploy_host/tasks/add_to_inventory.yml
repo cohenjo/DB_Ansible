@@ -1,0 +1,11 @@
+---
+- name: Add hosts to in-memory inventory 
+  add_host:
+    name: "{{ item.private_dns_name }} "
+    groups:
+      ec2_type={{ item.instance_type }}
+      ec2_region={{ item.region }}
+      ec2_tag_Name={{ item.tags.Name }}
+      ec2_tag_app={{ item.tags.app }}
+      ec2_tag_farm={{ item.tags.farm }}
+  with_items: "{{ instances.instances }}"

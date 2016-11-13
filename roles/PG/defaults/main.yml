@@ -20,7 +20,10 @@ postgres_user: postgres
 created_users:
   - name: barman
     password: barman_123
+    roles: REPLICATION,SUPERUSER
   - name: repmgr
     password: repmgr_123
+    roles: REPLICATION
   - name: maas_admin
     password: maas_admin_123
+    roles: CREATEDB,NOSUPERUSER

@@ -1,80 +1,20 @@
 ---
 # file: roles/common/tasks/main.yml
 
-# - name: be sure ntp is installed
-#   yum: name=ntp state=installed
-#   tags: ntp
-#
-# - name: be sure ntp is configured
-#   template: src=ntp.conf.j2 dest=/etc/ntp.conf
-#   notify:
-#     - restart ntpd
-#   tags: ntp
-#
-# - name: be sure ntpd is running and enabled
-#   service: name=ntpd state=started enabled=yes
-#   tags: ntp
-# - name: set swappiness to 5
-#   sysctl:
-#     name: vm.swappiness
-#     value: 5
-#     state: present
+- include: host.yml
+  tags: [host]
 
-- name: set overcommit to 2
-  sysctl:
-    name: vm.overcommit_memory
-    value: 2
-    state: present
-  become: yes
-  become_user: root
+- name: Install the common packages
+  package: name={{ item }} state=latest
+  with_items: "{{ common_packages }}"
+   - libselinux-python
+   - chrony
 
-- name: set ulimits, nproc 10000.
-  pam_limits:
-    domain: "*"
-    limit_type: "-"
-    limit_item: nproc
-    value: 10000
-  become: yes
-  become_user: root
+- name: disable selinux
+  selinux: state=disabled
 
-- name: set ulimits, nofile 65536.
-  pam_limits:
-    domain: "*"
-    limit_type: "-"
-    limit_item: nofile
-    value: 65536
-  become: yes
-  become_user: root
-#
-# - name: set ulimits, data.
-#   pam_limits:
-#     domain: *
-#     limit_type: -
-#     limit_item: data
-#     value: unlimited
-#     comment: "unlimited data"
-
-- name: set fs.file-max to 40k
-  sysctl:
-    name: fs.file-max
-    value: 40000
-    state: present
-  become: yes
-  become_user: root
-
-
-- name: "set kernel.shmmax to {{ansible_memtotal_mb*512*1024}}"
-  sysctl:
-    name: kernel.shmmax
-    value: "{{ansible_memtotal_mb*512*1024}}"
-    state: present
-  become: yes
-  become_user: root
-
-- name: set kernel.shmall to "{{(ansible_memtotal_mb*256*256)|int}}"
-  sysctl:
-    name: kernel.shmall
-    value: "{{ansible_memtotal_mb*256}}"
-    state: present
-  become: yes
-  become_user: root
+- name: start chrony
+  systemd:
+    name: chrony
+    state: started
+    daemon_reload: yes

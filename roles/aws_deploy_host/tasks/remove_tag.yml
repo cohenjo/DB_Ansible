@@ -1,0 +1,10 @@
+---
+- name: "Ramove tag from hosts"
+  ec2_tag:
+    resource: "{{ item }}"
+    tags: 
+      just_created: true
+    state: absent
+  with_items: "{{ instances.instance_ids }}"
+  tags:
+    - create

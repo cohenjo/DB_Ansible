@@ -3,47 +3,10 @@
 - include: ssh.yml
   tags: [ssh]
 
-- name: create filesystem for DATA
-  filesystem: fstype=xfs dev=/dev/xvdb
+- include: pg_host.yml
   become: yes
   become_user: root
-
-- name: Mount /DATA device
-  mount:
-    name: /DATA
-    src: /dev/xvdb
-    fstype: xfs
-    opts: 'nobarrier,noatime,noexec,nodiratime'
-    state: present
-  become: yes
-  become_user: root
-
-- name: mount all
-  command: /usr/bin/mount -a
-  become: yes
-  become_user: root
-
-- name: "Create {{PGDATA}} folder"
-  file:
-    path: "{{pg_env.PGDATA}}"
-    state: directory
-    owner: postgres
-    group: postgres
-  become: yes
-  become_user: root
-
-# - name: install postgres repo
-#   yum:
-#     name: https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat96-9.6-3.noarch.rpm
-#     state: present
-#
-- name: install postgres
-  package:
-    name: "{{ item }}"
-    state: present
-  with_items: "{{ PG_packages }}"
-  become: yes
-  become_user: root
+  tags: [host]
 #
 #
 - name: copy over configuration file
@@ -52,7 +15,9 @@
   become_user: root
 
 - name: reload the systemd daemon
-  command: /usr/bin/systemctl daemon-reload
+  systemd:
+    daemon_reload: yes
+    name: postgresql-9.6.service
   become: yes
   become_user: root
 
@@ -66,46 +31,12 @@
   become_user: root
   when: master == 'yes'
 
-- name: "set hugepages to {{(ansible_memtotal_mb/3)|int}} pages"
-  sysctl:
-    name: vm.nr_hugepages
-    value: "{{(ansible_memtotal_mb/4)|int}}"
-    state: present
-  become: yes
-  become_user: root
-
-- name: Create log folder
-  file:
-    path: /var/log/maas/pg_log
-    state: directory
-    owner: postgres
-    group: postgres
-  become: yes
-  become_user: root
-
-- name: Create /var/lib/pgsql/pg_stat_tmp folder
-  file:
-    path: /var/lib/pgsql/pg_stat_tmp
-    state: directory
-    mode: 01777
-    owner: postgres
-    group: postgres
-  become: yes
-  become_user: root
-
-
-- name: Mount up /var/lib/pgsql/pg_stat_tmp
-  mount:
-    name: /var/lib/pgsql/pg_stat_tmp
-    src: 'tmpfs'
-    fstype: tmpfs
-    opts: 'size=2G,uid=postgres,gid=postgres'
-    state: present
-  become: yes
-  become_user: root
-
-- name: create filesystem for pg_xlog
-  filesystem: fstype=xfs dev=/dev/xvdc
+# Hack to mount the xlog on a different disk
+- name: backup xlog - a hack to mount xlog on a different disk
+  shell: cd {{pg_env.PGDATA}} && cp -rp pg_xlog pg_xlog_bck
+  args:
+    executable: /bin/bash
+    creates: "{{pg_env.PGDATA}}/pg_xlog_bck"
   become: yes
   become_user: root
 
@@ -115,31 +46,17 @@
     src: /dev/xvdc
     fstype: xfs
     opts: 'nobarrier,noatime,noexec,nodiratime'
-    state: present
+    state: mounted
   become: yes
   become_user: root
 
-- name: backup xlog
-  shell: cd {{pg_env.PGDATA}} && cp -rp pg_xlog pg_xlog_bck
-  args:
-    executable: /bin/bash
-    creates: "{{pg_env.PGDATA}}/pg_xlog_bck"
-  become: yes
-  become_user: root
-
-- name: mount all
-  command:  /usr/bin/mount -a
-  become: yes
-  become_user: root
-
-- name: copy back
+- name: copy back - end of hack, xlog back in place.
   shell: cd {{pg_env.PGDATA}} && cp -rp pg_xlog_bck/* pg_xlog/ && chown -R postgres:postgres pg_xlog && rm -rf pg_xlog_bck
   args:
     executable: /bin/bash
     removes: "{{pg_env.PGDATA}}/pg_xlog_bck"
   become: yes
   become_user: root
-
 
 - name: copy over configuration file
   copy: src=postgresql.conf dest="{{pg_env.PGDATA}}/postgresql.conf" owner=postgres group=postgres
@@ -156,7 +73,7 @@
   become: yes
   become_user: postgres
 
-- name: copy over repmgr configuration files
+- name: copy over pgbouncer configuration files
   copy: src=repmgr/pgbouncer.ini dest="/etc/pgbouncer/pgbouncer.ini" owner={{ postgres_user }} group=postgres mode=0644
   become: yes
   become_user: root
@@ -166,17 +83,11 @@
   become: yes
   become_user: postgres
 
-# - name: start the PG service
-# - systemd:
-#     name: postgresql-9.6.service
-#     state: started
-#     enabled: False
-#   become: yes
-#   become_user: root
-- name: /bin/systemctl start postgresql-9.6
-  command: /bin/systemctl start postgresql-9.6
-  args:
-    creates: "{{pg_env.PGDATA}}/postmaster.pid"
+- name: start the PG service
+- systemd:
+    name: postgresql-9.6.service
+    state: started
+    enabled: False
   become: yes
   become_user: root
 

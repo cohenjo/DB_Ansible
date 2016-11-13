@@ -1,0 +1,5 @@
+---
+- name: Print Instance ID
+  debug:
+    msg: "AWS ID is: {{ item }}"
+  with_items: "{{ instances.instance_ids }}"

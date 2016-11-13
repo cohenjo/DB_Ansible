@@ -1,0 +1,34 @@
+---
+- name: sysctl configuration
+  sysctl:
+    name: "{{item.name}}"
+    value: "{{ item.value }}"
+    state: present
+  with_items: "{{ kernel_params }}"
+
+
+- name: set ulimits
+  pam_limits:
+    domain: "{{ item.domain }}"
+    limit_type: "{{ item.type }}"
+    limit_item: "{{ item.litem }}"
+    value: "{{ item.value }}"
+  with_items: "{{ ulimits }}"
+
+- name: Create udev rules
+  template: src=ebs.rules.j2 dest=/etc/udev/rules.d/99-ebs.rules
+
+- name: trigger the new rules on the xvdb device
+  shell: udevadm trigger -v -s 'block' --name-match=/dev/xvdb
+
+- name: create directory for no-thp profile
+  file: path=/etc/tuned/no-thp state=directory
+
+- name: Disable Transparent Huge Pages enabled using tuned
+  template: src=tuned.conf.j2 dest=/etc/tuned/no-thp/tuned.conf
+
+- name: Disable Transparent Huge Pages defrag using tuned
+  copy: src=disable_defrag.sh dest=/etc/tuned/no-thp/disable_defrag.sh mode=755
+
+- name: trigger tuned
+  shell: tuned-adm profile no-thp

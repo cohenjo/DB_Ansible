@@ -1,0 +1,57 @@
+---
+# Ansible Playbook Deploy
+
+- name: Print AWS keys
+  debug: 
+    msg: "Your AWS access key is: {{ lookup('env', 'AWS_ACCESS_KEY_ID') }} and secret key is {{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+
+- name: "Create new EC2 hosts"
+  ec2:
+    aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+    aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+    group: "{{ hosts[item].aws_groups }}"
+    key_name: mgmt-eu
+    count: "{{ hosts[item].aws_count}}"
+    region: "{{ hosts[item].aws_region }}"
+    instance_type: "{{ hosts[item].aws_scale }}"
+    image: "{{ hosts[item].aws_ami_id }}"
+    volumes: "{{ hosts[item].volumes }}"
+    wait: yes
+    wait_timeout: 500
+    instance_tags:
+        Name: pavel-test
+        farm: "{{ farm_name }}"
+        app: "{{ item }}"
+        just_created: true
+    monitoring: no
+    # vpc_subnet_id: "{{ hosts[item].subnet_id }}"                   # ?
+    # assign_public_ip: "{{ hosts[item].assign_ip }}"                # ?
+  register: ec2_infra_host_deploy_result
+  with_items: "{{ hosts }}"
+  tags:
+    - create
+
+- name: Print message
+  debug:
+    var: ec2_infra_host_deploy_result
+
+- include: print_ids.yml
+  with_items: "{{ ec2_infra_host_deploy_result.results }}"
+  loop_control:
+    loop_var: instances
+
+- include: add_to_inventory.yml
+  with_items: "{{ ec2_infra_host_deploy_result.results }}"
+  loop_control:
+    loop_var: instances
+  
+- include: wait_ssh.yml
+  with_items: "{{ ec2_infra_host_deploy_result.results }}"
+  loop_control:
+    loop_var: instances
+
+
+# - include: remove_tag.yml
+#   with_items: "{{ ec2_infra_host_deploy_result.results }}"
+#   loop_control:
+#     loop_var: instances

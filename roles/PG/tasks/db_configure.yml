@@ -1,28 +1,12 @@
 ---
 
 
-
-- name: create the maas admin user.
+- name: create the db users.
   postgresql_user:
-   name: maas_admin
-   password: maas_admin_123
-   role_attr_flags: CREATEDB,NOSUPERUSER
-  become: yes
-  become_user: postgres
-
-- name: create the barman user.
-  postgresql_user:
-   name: barman
-   password: barman_123
-   role_attr_flags: REPLICATION,SUPERUSER
-  become: yes
-  become_user: postgres
-
-- name: create the repmgr user.
-  postgresql_user:
-   name: repmgr
-   password: repmgr_123
-   role_attr_flags: REPLICATION
+   name: "{{ item.name }}"
+   password: "{{ item.password }}"
+   role_attr_flags: "{{ item.roles }}"
+  with_items: "{{ created_users }}"
   become: yes
   become_user: postgres
 

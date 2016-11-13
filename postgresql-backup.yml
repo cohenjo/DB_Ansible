@@ -2,6 +2,7 @@
 # file: postgresql-backup.yml
 # - hosts: postgres
 - hosts: tag_Name_PG_Jony
+  tags: ['backup']
   remote_user: centos
   # private_key_file: '/Users/cohenjo/HPEOneDrive/OneDrive - Hewlett Packard Enterprise/Documents/Amazon AWS/Tunnelblick/mgmt-eu.pem'
   vars:
@@ -17,6 +18,7 @@
     - PG-Backup
 
 - hosts: PG-Replica-launched
+  tags: ['replica_config']
   remote_user: centos
   vars:
     master: no

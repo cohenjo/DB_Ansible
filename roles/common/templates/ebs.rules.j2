@@ -1,0 +1,2 @@
+# Setting specific kernel parameters for a subset of block devices (Intel SSDs)
+SUBSYSTEM=="block", ACTION=="add|change", KERNEL=="xvd[b-z]", ATTR{bdi/read_ahead_kb}="{{ io_rh }}", ATTR{queue/scheduler}="{{ io_sched }}"

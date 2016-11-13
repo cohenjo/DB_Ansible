@@ -1,0 +1,18 @@
+---
+# file: group_vars/amazon_farm
+
+param1: "test-param"
+
+farm_name: "test"
+
+subnet_id: "subnet-32d23f48"
+
+hosts:
+  mongo:
+    aws_scale: t2.medium
+    aws_region: eu-central-1
+    aws_ami_id: ami-010cfe6e
+    aws_groups: [ 'lazy-pavel' ]
+    aws_count: 3
+    volumes:
+      - { device_name: /dev/sdb, volume_size: 50, device_type: standard, delete_on_termination: true }
