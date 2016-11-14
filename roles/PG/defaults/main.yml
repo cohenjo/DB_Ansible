@@ -12,7 +12,7 @@ PG_packages:
   - barman-cli
   - bzip2
   - gzip
-  - xz-utils
+  - xz
   - logrotate
 
 postgres_user: postgres

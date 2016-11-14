@@ -31,4 +31,4 @@
   copy: src=disable_defrag.sh dest=/etc/tuned/no-thp/disable_defrag.sh mode=755
 
 - name: trigger tuned
-  shell: tuned-adm profile no-thp
+  shell: /usr/sbin/tuned-adm profile no-thp

@@ -7,8 +7,6 @@
    password: "{{ item.password }}"
    role_attr_flags: "{{ item.roles }}"
   with_items: "{{ created_users }}"
-  become: yes
-  become_user: postgres
 
 #
 # - name: GRANT ALL PRIVILEGES ON SCHEMA public TO maas_admin
@@ -23,18 +21,11 @@
   postgresql_ext:
     name: pg_trgm
     db: template1
-    login_host: localhost
-    login_password: postgres
-    login_user: postgres
-  become: yes
-  become_user: postgres
 
 - name: create the EMS db
   postgresql_db: name=developer_ems
                  encoding='UTF-8'
-                 template='template0'
-  become: yes
-  become_user: postgres
+                 template='template1'
 
   #
   # - name: set wal_level to hot_standby in postgresql.conf

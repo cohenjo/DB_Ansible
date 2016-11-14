@@ -7,14 +7,12 @@
 - name: Install the common packages
   package: name={{ item }} state=latest
   with_items: "{{ common_packages }}"
-   - libselinux-python
-   - chrony
 
 - name: disable selinux
   selinux: state=disabled
 
 - name: start chrony
   systemd:
-    name: chrony
+    name: chronyd
     state: started
     daemon_reload: yes

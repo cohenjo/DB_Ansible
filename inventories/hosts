@@ -9,3 +9,6 @@ pgdev ansible_host=192.168.99.100 ansible_port=22
 
 [tag_Role_PG_Replica]
 10.250.2.147
+
+[pgml]
+10.250.2.69

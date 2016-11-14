@@ -23,13 +23,13 @@
 
 # TODO: FIX this.
 - name: initdb the server
-  shell: /usr/pgsql-9.6/bin/postgresql96-setup initdb --data-checksums postgresql-9.6
+  shell: /usr/pgsql-9.6/bin/postgresql96-setup initdb postgresql-9.6
   args:
     executable: /bin/bash
     creates: /DATA/9.6/data/PG_VERSION
   become: yes
   become_user: root
-  when: master == 'yes'
+  when: "{{ master | bool }}"
 
 # Hack to mount the xlog on a different disk
 - name: backup xlog - a hack to mount xlog on a different disk
@@ -63,6 +63,11 @@
   become: yes
   become_user: postgres
 
+- name: copy over pg_hba file
+  copy: src=pg_hba.conf dest="{{pg_env.PGDATA}}/pg_hba.conf" owner=postgres group=postgres
+  become: yes
+  become_user: postgres
+
 - name: copy over extra configuration file
   copy: src=conf.d dest="{{pg_env.PGDATA}}/conf.d" owner={{ postgres_user }} group=postgres
   become: yes
@@ -84,7 +89,7 @@
   become_user: postgres
 
 - name: start the PG service
-- systemd:
+  systemd:
     name: postgresql-9.6.service
     state: started
     enabled: False
@@ -99,6 +104,8 @@
     owner: "{{ postgres_user }}"
     create: yes
     mode: 0600
+  become: yes
+  become_user: "{{ postgres_user }}"
   with_items: "{{ created_users }}"
 
 
@@ -106,5 +113,7 @@
   easy_install: name=psycopg2 state=latest
 
 - include: db_configure.yml
-  when: master == 'yes'
-  tags: [postgres, pg-configure]
+  become: yes
+  become_user: postgres
+  when: "{{ master | bool }}"
+  tags: [master, pg-configure]

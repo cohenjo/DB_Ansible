@@ -35,12 +35,13 @@
     name: "{{ item }}"
     state: present
   with_items: "{{ PG_packages }}"
+  ignore_errors: yes
 
 
-- name: "set hugepages to {{(ansible_memtotal_mb/3)|int}} pages"
+- name: "set hugepages to {{(ansible_memtotal_mb/8)|int}} pages"
   sysctl:
     name: vm.nr_hugepages
-    value: "{{(ansible_memtotal_mb/4)|int}}"
+    value: "{{(ansible_memtotal_mb/8)|int}}"
     state: present
 
 - name: Create log folder

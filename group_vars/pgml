@@ -2,9 +2,10 @@
 
 master: yes
 PG_version: 9.6
-PG_HOME: /usr/pgsql-{{ PG_version }}
-PG_BIN: {{ PG_HOME }}/bin
+PG_HOME: "/usr/pgsql-{{ PG_version }}"
+PG_BIN: "{{ PG_HOME }}/bin"
 pg_env:
-  PATH: {{ PG_BIN }}:/bin:$PATH
+  PATH: "{{ PG_BIN }}:/bin:/sbin:$PATH"
   LOG_DIR: /var/log/maas/pg_log
-  PGDATA: /DATA/{{ PG_version }}/data
+  PGDATA: "/DATA/{{ PG_version }}/data"
+  PGSETUP_INITDB_OPTIONS: "--data-checksums"

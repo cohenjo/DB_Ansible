@@ -17,7 +17,7 @@
         group_id: ['sg-066df76e','sg-a06d28c8']
         count: 1
         region: "{{ region }}"
-        instance_type: t2.medium
+        instance_type: m4.2xlarge
         image: ami-39946a56
         wait: yes
         wait_timeout: 500
@@ -42,24 +42,19 @@
     - name: Add new instance to host group
       add_host: name={{ item.private_ip }} groupname=pgml
       with_items: '{{ec2.instances}}'
-
+    - name: Wait for SSH to come up
+      wait_for: host={{ item.private_ip }} port=22 delay=30 timeout=700 state=started
+      with_items: '{{ec2.instances}}'
 
 - hosts: pgml
   tags: ['master']
   remote_user: centos
-  vars:
-    master: yes
-    pg_env:
-      PATH: /usr/pgsql-9.6/bin:/bin:$PATH
-      LOG_DIR: /var/log/maas/pg_log
-      PGDATA: /DATA/9.6/data
-
-  environment: "{{pg_env}}"
   vars_files:
     - group_vars/PG-Master
+  environment: "{{pg_env}}"
   roles:
-    - common
-    - PG
+    - { role: common, become: yes, become_user: root}
+    - { role: PG, master: yes}
     - { role: ansible-repmgr , become: yes, become_user: root}
 
 - hosts: tag_Role_PG_Barman

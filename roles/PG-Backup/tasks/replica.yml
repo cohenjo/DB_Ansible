@@ -9,7 +9,7 @@
     group_id: ['sg-066df76e','sg-a06d28c8']
     count: 1
     region: "{{ region }}"
-    instance_type: t2.medium
+    instance_type: m4.2xlarge
     image: ami-39946a56
     wait: yes
     wait_timeout: 500
