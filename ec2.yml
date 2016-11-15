@@ -4,7 +4,7 @@
   hosts: localhost
   connection: local
   roles:
-    - aws_deploy_host
+    - { role: aws_deploy_host }
   vars_files:
     - group_vars/amazon_farm_{{ farm_name }}
 
