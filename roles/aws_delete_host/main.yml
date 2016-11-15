@@ -1,0 +1,22 @@
+---
+# Ansible Playbook Deploy
+
+- name: Print AWS keys
+  debug: 
+    msg: "Your AWS access key is: {{ lookup('env', 'AWS_ACCESS_KEY_ID') }} and secret key is {{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+
+
+- name: Delete all EC2 hosts of farm
+  ec2:
+    aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+    aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+    state: stopped
+    instance_tags:
+      Name: pavel-test
+      farm: "{{ farm_name }}"
+      just_created: true
+  register: ec2_infra_host_deploy_result
+  ignore_errors: yes
+  tags:
+    - delete
+
