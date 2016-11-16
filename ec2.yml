@@ -9,21 +9,16 @@
     - group_vars/amazon_farm_{{ farm_name }}
 
 
-- hosts: mngl
-  name: deploy
+- name: deploy
+  hosts: localhost
+  connection: local
   user: centos
-  gather_facts: true
-  vars_files:
-    - group_vars/mongo
-  vars:
-    # It's a 'master' node
-    mongodb_login_host: "{{ groups['mngl'][0] }}"
-  # roles:
-  #   - {role: mongod,become: yes, become_user: root, tags: [mongo]}
   tasks:
     - name: print the hosts
       debug: msg={{ item }}
-      with_items: "{{groups['mngl']}}"
+      with_items: "{{ groups['global_id_eu-central-1_infra_mongo'] }}"
+      tags:
+        - create
 
 # - hosts: vrtl
 #   name: deploy

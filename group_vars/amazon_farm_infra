@@ -3,7 +3,7 @@
 
 param1: "test-param"
 
-farm_name: "test"
+farm_name: "infra"
 
 subnet_id: "subnet-32d23f48"
 
@@ -14,16 +14,16 @@ hosts:
     aws_ami_id: ami-010cfe6e
     aws_groups: [ 'lazy-pavel' ]
     group: mngl
-    aws_count: 3
-    volumes:
-      - { device_name: /dev/sdb, volume_size: 50, device_type: standard, delete_on_termination: true }
-  postgres:
-    aws_scale: m4.2xlarge
-    aws_region: eu-central-1
-    aws_ami_id: ami-39946a56
-    aws_groups: [ 'lazy-pavel' ]
-    # group_id: ['sg-066df76e','sg-a06d28c8']
     aws_count: 1
     volumes:
-      - { device_name: /dev/sdb, volume_size: 50, delete_on_termination: true }
-      - { device_name: /dev/sdc, volume_size: 50, delete_on_termination: true}
+      - { device_name: /dev/sdb, volume_size: 50, device_type: standard, delete_on_termination: true }
+#  postgres:
+#    aws_scale: m4.2xlarge
+#    aws_region: eu-central-1
+#    aws_ami_id: ami-39946a56
+#    aws_groups: [ 'lazy-pavel' ]
+#    # group_id: ['sg-066df76e','sg-a06d28c8']
+#    aws_count: 1
+#    volumes:
+#      - { device_name: /dev/sdb, volume_size: 50, delete_on_termination: true }
+#      - { device_name: /dev/sdc, volume_size: 50, delete_on_termination: true}
