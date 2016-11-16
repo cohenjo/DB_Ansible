@@ -8,15 +8,16 @@
   vars_files:
     - group_vars/amazon_farm_{{ farm_name }}
 
-
 - name: deploy
   hosts: localhost
   connection: local
   user: centos
   tasks:
     - name: print the hosts
-      debug: msg={{ item }}
-      with_items: "{{ groups['tag_global_id_infra_mongo'] }}"
+      debug: var={{ item }}
+      with_items: groups['tag_global_id_{{farm_name}}_mongo']
+      # "{{ groups['tag_global_id_[{{farm_name}}]_mongo'] }}"
+                  
       tags:
         - create
 

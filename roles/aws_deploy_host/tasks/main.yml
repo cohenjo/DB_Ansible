@@ -10,7 +10,9 @@
     aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
     group: "{{ hosts[item].aws_groups }}"
     key_name: mgmt-eu
-    count: "{{ hosts[item].aws_count}}"
+    exact_count: "{{ hosts[item].aws_count}}"
+    count_tag:
+      global_id: "{{ farm_name }}_{{ item }}"
     region: "{{ hosts[item].aws_region }}"
     instance_type: "{{ hosts[item].aws_scale }}"
     image: "{{ hosts[item].aws_ami_id }}"
