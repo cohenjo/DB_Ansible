@@ -2,5 +2,5 @@
 - name: Add hosts to in-memory inventory 
   add_host:
     name: "{{ item.private_dns_name }}"
-    groups: "global_id_eu-central-1_infra_mongo"
+    groups: "tag_global_id_{{item.tags.global_id}}"
   with_items: "{{ instances.instances }}"

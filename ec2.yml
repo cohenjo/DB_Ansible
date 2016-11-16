@@ -16,7 +16,7 @@
   tasks:
     - name: print the hosts
       debug: msg={{ item }}
-      with_items: "{{ groups['global_id_eu-central-1_infra_mongo'] }}"
+      with_items: "{{ groups['tag_global_id_infra_mongo'] }}"
       tags:
         - create
 
