@@ -21,6 +21,7 @@
         Name: pavel-test
         farm: "{{ farm_name }}"
         app: "{{ item }}"
+        global_id: "{{ farm_name }}_{{ item }}"
         just_created: true
     monitoring: no
     # vpc_subnet_id: "{{ hosts[item].subnet_id }}"                   # ?
