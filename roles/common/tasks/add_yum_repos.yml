@@ -1,0 +1,23 @@
+- name: Add the third party yum repo file
+  copy:
+    src: thirdparty-nexus.repo
+    dest: /etc/yum.repos.d/thirdparty-nexus.repo
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Add the mongodb yum repo file
+  copy:
+    src: mongodb-3.2.repo
+    dest: /etc/yum.repos.d/mongodb-3.2.repo
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Add the postgres yum repo file
+  copy:
+    src: postgres.repo
+    dest: /etc/yum.repos.d/postgres.repo
+    owner: root
+    group: root
+    mode: "0644"
