@@ -1,0 +1,10 @@
+[thirdparty-nexus]
+name=3rd party
+baseurl=http://35.156.104.150/repository/3d-party/
+enabled=1
+protect=0
+gpgcheck=0
+metadata_expire=30s
+autorefresh=1
+type=rpm-md
+proxy=_none_
