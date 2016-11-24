@@ -1,0 +1,40 @@
+---
+# file: group_vars/amazon_farm
+
+param1: "test-param"
+
+farm_name: "infra"
+
+subnet_id: "subnet-32d23f48"
+
+hosts:
+  mngm_vpn:
+    aws_scale: t2.medium
+    aws_region: eu-central-1
+    aws_ami_id: ami-400cc92f
+    aws_groups: [ 'vpn' ]
+    group: mngl
+    aws_count: 1
+    subnet_id: subnet-6a46f802
+    assign_ip: yes
+    volumes: []
+  mngm_nexus:
+    aws_scale: t2.medium
+    aws_region: eu-central-1
+    aws_ami_id: ami-e146bc8e
+    aws_groups: [ 'nexus' ]
+    group: mngl
+    aws_count: 1
+    subnet_id: subnet-6346f80b
+    assign_ip: no
+    volumes: []
+ # mngm_jenkins:
+ #   aws_scale: t2.medium
+ #   aws_region: eu-central-1
+ #   aws_ami_id: ami-e146bc8e
+ #   aws_groups: [ 'nginx-lb' ]
+ #   group: mngl
+ #   aws_count: 1
+ #   subnet_id: subnet-9749f7ff
+ #   assign_ip: no
+ #   volumes: []

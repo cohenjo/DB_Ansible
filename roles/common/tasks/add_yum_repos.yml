@@ -1,3 +1,5 @@
+---
+
 - name: Add the third party yum repo file
   copy:
     src: thirdparty-nexus.repo
@@ -16,8 +18,8 @@
 
 - name: Add the postgres yum repo file
   copy:
-    src: postgres.repo
-    dest: /etc/yum.repos.d/postgres.repo
+    src: postgresql.repo
+    dest: /etc/yum.repos.d/postgresql.repo
     owner: root
     group: root
     mode: "0644"
