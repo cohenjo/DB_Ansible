@@ -1,0 +1,6 @@
+---
+
+
+backup_label: PG-test
+region: eu-central-1
+should_snap_wait: no

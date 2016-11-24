@@ -1,0 +1,192 @@
+---
+
+- include: backup.yml
+  become: yes
+  become_user: vertica
+  tags: [backup]
+# - include: replica.yml
+#   # when: build_replica == 'yes'
+#   tags: [replica]
+#
+# - name: create filesystem for DATA
+#   filesystem: fstype=xfs dev=/dev/xvdb
+#   become: yes
+#   become_user: root
+#
+# - name: Mount /DATA device
+#   mount:
+#     name: /DATA
+#     src: /dev/xvdb
+#     fstype: xfs
+#     opts: 'nobarrier,noatime,noexec,nodiratime'
+#     state: present
+#   become: yes
+#   become_user: root
+#
+# - name: mount all
+#   command: /usr/bin/mount -a
+#   become: yes
+#   become_user: root
+#
+# - name: "Create {{PGDATA}} folder"
+#   file:
+#     path: "{{pg_env.PGDATA}}"
+#     state: directory
+#     owner: postgres
+#     group: postgres
+#   become: yes
+#   become_user: root
+#
+# # - name: install postgres repo
+# #   yum:
+# #     name: https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat96-9.6-3.noarch.rpm
+# #     state: present
+# #
+# # - name: install postgres
+# #   package:
+# #     name: "{{ item }}"
+# #     state: present
+# #   with_items: "{{ PG_packages }}"
+# #
+# #
+# - name: copy over configuration file
+#   copy: src=postgresql-9.6.service dest="/etc/systemd/system/postgresql-9.6.service"
+#   become: yes
+#   become_user: root
+#
+# - name: reload the systemd daemon
+#   command: /usr/bin/systemctl daemon-reload
+#   become: yes
+#   become_user: root
+#
+# # TODO: FIX this.
+# - name: initdb the server
+#   shell: /usr/pgsql-9.6/bin/postgresql96-setup initdb postgresql-9.6
+#   args:
+#     executable: /bin/bash
+#     creates: /DATA/9.6/data/PG_VERSION
+#   become: yes
+#   become_user: root
+#   when: master == 'yes'
+#
+# - name: "set hugepages to {{(ansible_memtotal_mb/3)|int}} pages"
+#   sysctl:
+#     name: vm.nr_hugepages
+#     value: "{{(ansible_memtotal_mb/4)|int}}"
+#     state: present
+#   become: yes
+#   become_user: root
+#
+# - name: Create log folder
+#   file:
+#     path: /var/log/maas/pg_log
+#     state: directory
+#     owner: postgres
+#     group: postgres
+#   become: yes
+#   become_user: root
+#
+# - name: Create /var/lib/pgsql/pg_stat_tmp folder
+#   file:
+#     path: /var/lib/pgsql/pg_stat_tmp
+#     state: directory
+#     mode: 01777
+#     owner: postgres
+#     group: postgres
+#   become: yes
+#   become_user: root
+#
+#
+# - name: Mount up /var/lib/pgsql/pg_stat_tmp
+#   mount:
+#     name: /var/lib/pgsql/pg_stat_tmp
+#     src: 'tmpfs'
+#     fstype: tmpfs
+#     opts: 'size=2G,uid=postgres,gid=postgres'
+#     state: present
+#   become: yes
+#   become_user: root
+#
+# - name: create filesystem for pg_xlog
+#   filesystem: fstype=xfs dev=/dev/xvdc
+#   become: yes
+#   become_user: root
+#
+# - name: Mount pg_xlog
+#   mount:
+#     name: "{{pg_env.PGDATA}}/pg_xlog"
+#     src: /dev/xvdc
+#     fstype: xfs
+#     opts: 'nobarrier,noatime,noexec,nodiratime'
+#     state: present
+#   become: yes
+#   become_user: root
+#
+# - name: backup xlog
+#   shell: cd {{pg_env.PGDATA}} && cp -rp pg_xlog pg_xlog_bck
+#   args:
+#     executable: /bin/bash
+#     creates: "{{pg_env.PGDATA}}/pg_xlog_bck"
+#   become: yes
+#   become_user: root
+#
+# - name: mount all
+#   command:  /usr/bin/mount -a
+#   become: yes
+#   become_user: root
+#
+# - name: copy back
+#   shell: cd {{pg_env.PGDATA}} && cp -rp pg_xlog_bck/* pg_xlog/ && chown -R postgres:postgres pg_xlog && rm -rf pg_xlog_bck
+#   args:
+#     executable: /bin/bash
+#     removes: "{{pg_env.PGDATA}}/pg_xlog_bck"
+#   become: yes
+#   become_user: root
+#
+#
+# - name: copy over configuration file
+#   copy: src=postgresql.conf dest="{{pg_env.PGDATA}}/postgresql.conf" owner=postgres group=postgres
+#   become: yes
+#   become_user: postgres
+#
+# - name: copy over extra configuration file
+#   copy: src=conf.d dest="{{pg_env.PGDATA}}/conf.d" owner=postgres group=postgres
+#   become: yes
+#   become_user: postgres
+#
+# - name: copy over repmgr configuration files
+#   copy: src=repmgr dest="/var/lib/pgsql/repmgr" owner=postgres group=postgres mode=0644
+#   become: yes
+#   become_user: postgres
+#
+# - name: copy over repmgr configuration files
+#   copy: src=repmgr/pgbouncer.ini dest="/etc/pgbouncer/pgbouncer.ini" owner=postgres group=postgres mode=0644
+#   become: yes
+#   become_user: root
+#
+# - name: copy scripts folder
+#   copy: src=scripts dest="/var/lib/pgsql/scripts" owner=postgres group=postgres
+#   become: yes
+#   become_user: postgres
+#
+# # - name: start the PG service
+# # - systemd:
+# #     name: postgresql-9.6.service
+# #     state: started
+# #     enabled: False
+# #   become: yes
+# #   become_user: root
+# - name: /bin/systemctl start postgresql-9.6
+#   command: /bin/systemctl start postgresql-9.6
+#   args:
+#     creates: "{{pg_env.PGDATA}}/postmaster.pid"
+#   become: yes
+#   become_user: root
+#
+#
+# - name: install psycopg2
+#   easy_install: name=psycopg2 state=latest
+#
+# - include: db_configure.yml
+#   when: master == 'yes'
+#   tags: [postgres, pg-configure]

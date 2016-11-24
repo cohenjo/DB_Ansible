@@ -2,7 +2,7 @@
 
 - name: Add the third party yum repo file
   copy:
-    src: thirdparty-nexus.repo
+    src: thirdparthy-nexus.repo
     dest: /etc/yum.repos.d/thirdparty-nexus.repo
     owner: root
     group: root

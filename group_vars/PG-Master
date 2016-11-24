@@ -14,14 +14,14 @@ repmgr_ssh_public_key: roles/PG/files/ssh/id_rsa.pub
 repmgr_logfacility: STDERR
 repmgr_logfile: /var/log/maas/repmgr-96.log
 
-repmgr_cron:
-  hour: 4
-  minute: 0
-  day: '*'
-  job: "psql -U repmgr repmgr -c \"DELETE * FROM repmgr_test.repl_monitor WHERE last_monitor_time < current_timestamp - interval '4d'\""
-  name: "Removing repl_monitor old records"
-  weekday: '*'
-  user: "postgres"
-  month: '*'
-  weekday: '*'
-  disabled: false
+repmgr_crons:
+  cleanup:
+    name: "Removing repl_monitor old records"
+    user: "postgres"
+    weekday: '*'
+    month: '*'
+    hour: 4
+    minute: 0
+    day: '*'
+    job: "psql -U repmgr repmgr -c \"DELETE * FROM repmgr_test.repl_monitor WHERE last_monitor_time < current_timestamp - interval '4d'\""
+    disabled: false

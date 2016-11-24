@@ -84,7 +84,7 @@
   become_user: root
 
 - name: copy scripts folder
-  copy: src=scripts dest="/var/lib/pgsql/scripts" owner={{ postgres_user }} group=postgres
+  copy: src=scripts dest="/var/lib/pgsql/" owner={{ postgres_user }} group=postgres mode=0755
   become: yes
   become_user: postgres
 
@@ -95,6 +95,23 @@
     enabled: False
   become: yes
   become_user: root
+
+- name: run the pgbouncer configuration script.
+  shell: /var/lib/pgsql/scripts/pgbouncer.sh
+  become: yes
+  become_user: root
+
+- name: start the pgbouncer service
+  systemd:
+    name: pgbouncer.service
+    state: started
+    enabled: False
+  become: yes
+  become_user: root
+
+
+- name: log rotate configuration for pgbouncer
+  template: src=pgbouncer/logrotate.j2 dest=/etc/logrotate.d/postgresql-common
 
 - name: add password to .pgpass file
   lineinfile:

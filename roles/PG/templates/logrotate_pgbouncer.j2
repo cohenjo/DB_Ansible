@@ -1,0 +1,13 @@
+/var/log/postgresql/*.log {
+    {{ pgbouncer.config.log_rotate_retain_period }}
+    rotate {{ pgbouncer.config.log_rotate_retain_count }}
+    copytruncate
+    delaycompress
+    compress
+    notifempty
+    missingok
+    create 0644 {{ pgbouncer.user }} {{ pgbouncer.group }}
+    postrotate
+        /etc/init.d/pgbouncer reload
+
+}

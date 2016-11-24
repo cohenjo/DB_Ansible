@@ -44,6 +44,11 @@
       password: "{{ mongodb_root_admin_password }}",
       roles: "root"
       }
+    - {
+      name: "maas_admin",
+      password: "maas_admin_123",
+      roles: "scriptExecutor,dbAdminAnyDatabase,readWriteAnyDatabase"
+      }
   no_log: true
 #
 # - name: Move back mongod.conf

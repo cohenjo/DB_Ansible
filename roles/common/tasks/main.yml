@@ -1,6 +1,9 @@
 ---
 # file: roles/common/tasks/main.yml
 
+- include: add_yum_repos.yml
+  tags: [host]
+  
 - include: host.yml
   tags: [host]
 

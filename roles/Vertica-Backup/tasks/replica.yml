@@ -1,0 +1,44 @@
+---
+# here we build a replica from the taken backup
+
+- name: spin up replica host
+  ec2:
+    aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+    aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+    key_name: mgmt-eu
+    group_id: ['sg-066df76e','sg-a06d28c8']
+    count: 1
+    region: "{{ region }}"
+    instance_type: m4.2xlarge
+    image: ami-39946a56
+    wait: yes
+    wait_timeout: 500
+    instance_tags:
+      db: postgres
+      role: PG-Replica
+      Name: PG-Jony
+    volumes:
+      - device_name: /dev/sdb
+        snapshot: "{{ snap_data.snapshot_id }}"
+        volume_size: 50
+        delete_on_termination: true
+      - device_name: /dev/sdc
+        snapshot: "{{ snap_archive.snapshot_id }}"
+        volume_size: 50
+        delete_on_termination: true
+    monitoring: no
+    vpc_subnet_id: subnet-32d23f48
+    assign_public_ip: yes
+  register: ec2
+
+- name: print instance info
+  action: debug msg="Instance info  {{ ec2 }}"
+
+
+- name: Add new instance to host group
+  add_host: hostname={{ item.public_ip }} groupname=PG-Replica-launched
+  with_items: '{{ec2.instances}}'
+
+- name: Wait for SSH to come up
+  wait_for: host={{ item.public_ip }} port=22 delay=60 timeout=320 state=started
+  with_items: '{{ec2.instances}}'

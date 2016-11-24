@@ -8,8 +8,7 @@ cat > /etc/pgbouncer/users.auth <<EOF
 "$user" "$pswd" ""
 EOF
 
-psql -d developer_ems <<EOF
-CREATE USER pgbouncer;
+sudo -u postgres psql -d developer_ems <<EOF
 CREATE SCHEMA pgbouncer;
 CREATE OR REPLACE FUNCTION pgbouncer.user_lookup(in i_username text, out uname text, out phash text)
 RETURNS record AS $$

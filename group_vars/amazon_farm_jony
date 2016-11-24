@@ -1,0 +1,53 @@
+---
+# file: group_vars/amazon_farm
+
+param1: "test-param"
+ec2_region: "eu-central-1"
+
+# farm_name: "infra"
+
+subnet_id: "db_a"
+
+hosts:
+  mongo:
+    aws_scale: m4.xlarge
+    aws_region: "{{ ec2_region }}"
+    aws_ami_id: ami-010cfe6e
+    ebs_optimized: "true"
+    aws_groups: [ 'mongo' ]
+    group: mngl
+    aws_count: 3
+    volumes:
+      - { device_name: /dev/sdb, volume_size: 350, iops: 1000, volume_type: io1, delete_on_termination: true } # comment: "data"
+      # - { device_name: /dev/sdb, volume_size: 50, iops: 250, volume_type: io1, delete_on_termination: true } # comment: "journal"
+      # - { device_name: /dev/sdb, volume_size: 20, iops: 100, volume_type: io1, delete_on_termination: true } # comment: "log"
+  postgres:
+    aws_scale: m4.2xlarge
+    aws_region: "{{ ec2_region }}"
+    aws_ami_id: ami-39946a56
+    ebs_optimized: "true"
+    aws_groups: [ 'postgres' ]
+    # group_id: ['sg-066df76e','sg-a06d28c8']
+    aws_count: 1
+    volumes:
+      - { device_name: /dev/sdb, volume_size: 350, iops: 1000, volume_type: io1, delete_on_termination: true } # comment: "data"
+      - { device_name: /dev/sdc, volume_size: 100, iops: 1000, volume_type: io1, delete_on_termination: true } # comment: "wal log"
+  vertica:
+    aws_scale: m4.xlarge
+    aws_region: "{{ ec2_region }}"
+    aws_ami_id: ami-010cfe6e
+    ebs_optimized: "true"
+    aws_groups: [ 'vertica' ]
+    group: mngl
+    aws_count: 3
+    volumes:
+      - { device_name: /dev/sdb, volume_size: 50, device_type: standard, delete_on_termination: true }
+  barman:
+    aws_scale: t2.medium
+    aws_region: "{{ ec2_region }}"
+    aws_ami_id: ami-010cfe6e
+    aws_groups: [ 'postgres' ]
+    group: barman
+    aws_count: 1
+    volumes:
+      - { device_name: /dev/sdb, volume_size: 50, device_type: standard, delete_on_termination: true }

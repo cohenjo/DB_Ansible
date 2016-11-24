@@ -1,0 +1,8 @@
+---
+
+- hosts: tag_global_id_{{farm_name}}_barman
+  tags: ['barman']
+  remote_user: centos
+  roles:
+    - common
+    - { role: ansible-barman , become: yes, become_user: root}

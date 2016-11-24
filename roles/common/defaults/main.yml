@@ -18,3 +18,4 @@ kernel_params:
   - {name: kernel.shmmax, value: "{{ansible_memtotal_mb*512*1024}}"}
   - {name: kernel.shmall, value: "{{ansible_memtotal_mb*256}}"}
   - {name: fs.file-max,   value: 40000 }
+  - {name: vm.zone_reclaim_mode, value: 0 }

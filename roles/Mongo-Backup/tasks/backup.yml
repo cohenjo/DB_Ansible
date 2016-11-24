@@ -1,0 +1,29 @@
+---
+# identify the instance ID
+
+
+
+# Gather ec2 facts to snapshot example
+- name: Gather facts
+  action: ec2_facts
+
+- name: print instance id
+  action: debug msg="The instanceid is {{ ansible_ec2_instance_id }}"
+
+# snapshot the disks using the instance ID.
+# Snapshot of volume mounted on device_name attached to instance_id
+- ec2_snapshot:
+    instance_id: "{{ ansible_ec2_instance_id }}"
+    device_name: /dev/sdb
+    region: eu-central-1
+    wait: "{{ should_snap_wait }}"
+    aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+    aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+    description: snapshot of /data from Mongo-Jony
+  run_once: true
+  register: snap_data
+
+
+- name: print volume name
+  action: debug msg="The volume is {{ snap_data }}"
+#
