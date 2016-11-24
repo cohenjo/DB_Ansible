@@ -1,4 +1,5 @@
 ---
 - name: Wait for SSH to come up
   wait_for: host={{ item.public_dns_name }} port=22 delay=10 timeout=320 state=started
+  when: item.public_dns_name is defined
   with_items: "{{ instances.instances }}"
