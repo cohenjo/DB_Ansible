@@ -1,6 +1,14 @@
 ---
-- name: Add hosts to in-memory inventory 
+- name: Add hosts to in-memory inventory (by public hostname)
+  add_host:
+    name: "{{ item.public_dns_name }}"
+    groups: "tag_global_id_{{item.tags.global_id}}, tag_farm_{{ farm_name}}"
+  when: item.public_dns_name is defined
+  with_items: "{{ instances.instances }}"
+
+- name: Add hosts to in-memory inventory (by private hostname)
   add_host:
     name: "{{ item.private_dns_name }}"
-    groups: "tag_global_id_{{item.tags.global_id}}"
+    groups: "tag_global_id_{{item.tags.global_id}}, tag_farm_{{ farm_name}}"
+  when: item.private_dns_name is defined and item.public_dns_name is not defined
   with_items: "{{ instances.instances }}"
