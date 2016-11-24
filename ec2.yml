@@ -8,18 +8,30 @@
   vars_files:
     - group_vars/amazon_farm_{{ farm_name }}
 
-- name: deploy
-  hosts: localhost
-  connection: local
-  user: centos
-  tasks:
-    - name: print the hosts
-      debug: var={{ item }}
-      with_items: groups['tag_global_id_{{farm_name}}_mongo']
-      # "{{ groups['tag_global_id_[{{farm_name}}]_mongo'] }}"
+- name: "Config VPN"
+  hosts: "tag_farm_{{ farm_name }}"
+  roles:
+    - { role: l}
+
+# - name: "Add repositories"
+#   hosts: "tag_farm_{{ farm_name }}"
+#   roles:
+#     - { role: add_yum_repos }
+#   vars_files:
+#     - group_vars/amazon_farm_{{ farm_name }}
+
+# - name: deploy
+#   hosts: localhost
+#   connection: local
+#   user: centos
+#   tasks:
+#     - name: print the hosts
+#       include: 
+#       with_items: groups['tag_global_id_{{farm_name}}_mongo']
+#       # "{{ groups['tag_global_id_[{{farm_name}}]_mongo'] }}"
                   
-      tags:
-        - create
+#       tags:
+#         - create
 
 # - hosts: vrtl
 #   name: deploy
@@ -70,3 +82,11 @@
 #     - group_vars/PG-Replica-launched
 #   roles:
 #     - { role: ansible-repmgr , become: yes, become_user: root}
+
+
+# - name: "Install Openfire"
+#   hosts: "tag_Name_Openfire:!tag_Farm_PavelTest"
+#   tasks:
+#     - name: print hostname
+#       debug:
+#         msg: "hostname is: {{ansible_hostname}}"

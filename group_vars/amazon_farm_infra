@@ -8,15 +8,70 @@ farm_name: "infra"
 subnet_id: "subnet-32d23f48"
 
 hosts:
-  mongo:
+  vpn:
     aws_scale: t2.medium
     aws_region: eu-central-1
-    aws_ami_id: ami-010cfe6e
-    aws_groups: [ 'lazy-pavel' ]
+    aws_ami_id: ami-400cc92f
+    aws_groups: [ 'vpn' ]
     group: mngl
     aws_count: 1
-    volumes:
-      - { device_name: /dev/sdb, volume_size: 50, device_type: standard, delete_on_termination: true }
+    subnet_id: subnet-6a46f802
+    assign_ip: yes
+    volumes: []
+  test_saw:
+    aws_scale: t2.medium
+    aws_region: eu-central-1
+    aws_ami_id: ami-e146bc8e
+    aws_groups: [ 'elk' ]
+    group: mngl
+    aws_count: 1
+    subnet_id: subnet-6346f80b
+    assign_ip: no
+    volumes: []
+  test_access:
+    aws_scale: t2.medium
+    aws_region: eu-central-1
+    aws_ami_id: ami-e146bc8e
+    aws_groups: [ 'nginx-lb' ]
+    group: mngl
+    aws_count: 1
+    subnet_id: subnet-9749f7ff
+    assign_ip: no
+    volumes: []
+#  openfire:
+#    aws_scale: t2.medium
+#    aws_region: eu-central-1
+#    aws_ami_id: ami-e146bc8e
+#    aws_groups: [ 'lazy-pavel' ]
+#    group: mngl
+#    aws_count: 2
+#    volumes: []
+#  mongo:
+#    aws_scale: t2.medium
+#    aws_region: eu-central-1
+#    aws_ami_id: ami-010cfe6e
+#    aws_groups: [ 'lazy-pavel' ]
+#    group: mngl
+#    aws_count: 1
+#    volumes:
+#      - { device_name: /dev/sdb, volume_size: 50, device_type: standard, delete_on_termination: true }
+#  idol-dihdah:
+#    aws_scale: t2.medium
+#    aws_region: eu-central-1
+#    aws_ami_id: ami-010cfe6e
+#    aws_groups: [ 'lazy-pavel' ]
+#    group: mngl
+#    aws_count: 1
+#    volumes: []
+#  idol-content:
+#    aws_scale: t2.medium
+#    aws_region: eu-central-1
+#    aws_ami_id: ami-010cfe6e
+#    aws_groups: [ 'lazy-pavel' ]
+#    group: mngl
+#    aws_count: 1
+#    volumes:
+#      - { device_name: /dev/sdb, volume_size: 50, device_type: standard, delete_on_termination: true }
 #  postgres:
 #    aws_scale: m4.2xlarge
 #    aws_region: eu-central-1
@@ -27,3 +82,36 @@ hosts:
 #    volumes:
 #      - { device_name: /dev/sdb, volume_size: 50, delete_on_termination: true }
 #      - { device_name: /dev/sdc, volume_size: 50, delete_on_termination: true}
+#  mongo:
+#    aws_scale: t2.medium
+#    aws_region: eu-central-1
+#    aws_ami_id: ami-010cfe6e
+#    aws_groups: [ 'lazy-pavel' ]
+#    group: mngl
+#    aws_count: 1
+#    volumes:
+#      - { device_name: /dev/sdb, volume_size: 50, device_type: standard, delete_on_termination: true }
+#  rabbitmq:
+#    aws_scale: t2.medium
+#    aws_region: eu-central-1
+#    aws_ami_id: ami-010cfe6e
+#    aws_groups: [ 'lazy-pavel' ]
+#    group: mngl
+#    aws_count: 1
+#    volumes: []
+#  redis:
+#    aws_scale: t2.medium
+#    aws_region: eu-central-1
+#    aws_ami_id: ami-010cfe6e
+#    aws_groups: [ 'lazy-pavel' ]
+#    group: mngl
+#    aws_count: 1
+#    volumes: []
+#  vertica:
+#    aws_scale: t2.medium
+#    aws_region: eu-central-1
+#    aws_ami_id: ami-010cfe6e
+#    aws_groups: [ 'lazy-pavel' ]
+#    group: mngl
+#    aws_count: 1
+#    volumes: []

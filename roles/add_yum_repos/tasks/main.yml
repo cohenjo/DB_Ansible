@@ -1,0 +1,4 @@
+---
+
+- name: include common role of adding yum repos
+  include: roles/common/tasks/add_yum_repos.yml
