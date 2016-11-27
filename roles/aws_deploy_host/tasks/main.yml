@@ -27,7 +27,7 @@
         global_id: "{{ farm_name }}_{{ item }}"
         just_created: true
     monitoring: no
-    vpc_subnet_id: "{{ hosts[item].subnet_id }}"                   # 
+    vpc_subnet_id: "{{ hosts[item].subnet_id }}"                   # Subnet id (no name, only id)
     assign_public_ip: "{{ hosts[item].assign_ip }}"                # Public access [yes/no]
   register: ec2_infra_host_deploy_result
   with_items: "{{ hosts }}"

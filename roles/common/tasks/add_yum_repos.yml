@@ -1,5 +1,8 @@
 ---
 
+- name: Clean all repositoies files
+  shell: rm -rf /etc/yum.repo.d/*
+
 - name: Add the third party yum repo file
   copy:
     src: thirdparthy-nexus.repo
