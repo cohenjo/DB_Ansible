@@ -1,0 +1,5 @@
+[centos-base]
+name=centos-base
+baseurl=http://10.250.1.23/repository/CentOS-Base/
+enabled=1
+gpgcheck=0
