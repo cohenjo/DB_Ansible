@@ -113,6 +113,18 @@
 - name: log rotate configuration for pgbouncer
   template: src=pgbouncer/logrotate.j2 dest=/etc/logrotate.d/postgresql-common
 
+- name: "create incremental pgBadger report hourly."
+  cron:
+    name: "hourly pgBadger"
+    special_time: hourly
+    user: "{{ postgres_user }}"
+    job: "/usr/bin/pgbadger -I -j 4 -O /var/log/maas/pgBadger -R 4 -q \
+        /var/log/maas/pg_log/postgresql-$(date --date yesterday +%a).log \
+        /var/log/maas/pg_log/postgresql-$(date +%a).log"
+    cron_file: ansible_pgbadger
+
+
+
 - name: add password to .pgpass file
   lineinfile:
     dest: "~{{ postgres_user }}/.pgpass"

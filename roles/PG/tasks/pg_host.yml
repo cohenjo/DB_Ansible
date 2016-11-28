@@ -25,11 +25,6 @@
     owner: postgres
     group: postgres
 
-- name: install postgres repo
-  yum:
-    name: https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat96-9.6-3.noarch.rpm
-    state: present
-
 - name: install postgres
   package:
     name: "{{ item }}"
@@ -47,6 +42,13 @@
 - name: Create log folder
   file:
     path: /var/log/maas/pg_log
+    state: directory
+    owner: postgres
+    group: postgres
+
+- name: Create pgBadger folder
+  file:
+    path: /var/log/maas/pgBadger
     state: directory
     owner: postgres
     group: postgres
