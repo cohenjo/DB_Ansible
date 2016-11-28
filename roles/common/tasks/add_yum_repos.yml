@@ -3,26 +3,10 @@
 - name: Clean all repositoies files
   shell: rm -rf /etc/yum.repo.d/*
 
-- name: Add the third party yum repo file
+- name: copy yum.repo folder
   copy:
-    src: thirdparthy-nexus.repo
-    dest: /etc/yum.repos.d/thirdparty-nexus.repo
+    src: yum.repo.d/
+    dest: "/etc/yum.repo.d/"
     owner: root
     group: root
-    mode: "0644"
-
-- name: Add the mongodb yum repo file
-  copy:
-    src: mongodb-3.2.repo
-    dest: /etc/yum.repos.d/mongodb-3.2.repo
-    owner: root
-    group: root
-    mode: "0644"
-
-- name: Add the postgres yum repo file
-  copy:
-    src: postgresql.repo
-    dest: /etc/yum.repos.d/postgresql.repo
-    owner: root
-    group: root
-    mode: "0644"
+    mode: 0755
