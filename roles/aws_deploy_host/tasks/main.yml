@@ -6,11 +6,11 @@
 
 - name: "Create new EC2 hosts"
   ec2:
-    aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
-    aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
-    group: "{{ hosts[item].aws_groups }}"
+    # aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+    # aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+    group: "{{ hosts[item].aws_groups | default([]) }}"
     key_name: mgmt-eu
-    exact_count: "{{ hosts[item].aws_count}}"
+    exact_count: "{{ hosts[item].aws_count | default(1)}}"
     count_tag:
       global_id: "{{ farm_name }}_{{ item }}"
     region: "{{ hosts[item].aws_region }}"
@@ -20,6 +20,7 @@
     wait: yes
     wait_timeout: 500
     ebs_optimized: "{{ hosts[item].ebs_optimized | default(false) }}"
+    instance_initiated_shutdown_behavior: "{{ shutdown_behavior | default('stop') }}"
     instance_tags:
         Name: pavel-test
         farm: "{{ farm_name }}"
@@ -27,8 +28,8 @@
         global_id: "{{ farm_name }}_{{ item }}"
         just_created: true
     monitoring: no
-    vpc_subnet_id: "{{ hosts[item].subnet_id }}"                   # 
-    assign_public_ip: "{{ hosts[item].assign_ip }}"                # Public access [yes/no]
+    vpc_subnet_id: "{{ hosts[item].subnet_id }}"                   # Subnet id (no name, only id)
+    assign_public_ip: "{{ hosts[item].assign_ip | default('no') }}"                # Public access [yes/no]
   register: ec2_infra_host_deploy_result
   with_items: "{{ hosts }}"
   tags:
