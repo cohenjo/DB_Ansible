@@ -1,0 +1,82 @@
+---
+
+- name: "Deploy new hosts on EC2"
+  hosts: localhost
+  connection: local
+  roles:
+    - { role: aws_deploy_host }
+  vars_files:
+    - group_vars/amazon_farm_{{ farm_name }}
+
+
+- name: deploy
+  hosts: localhost
+  connection: local
+  user: centos
+  tasks:
+    - name: print the hosts
+      debug: msg={{ item }}
+      with_items: "{{ groups['tag_global_id_'+farm_name+'_mongo'] }}"
+      tags:
+        - create
+    - name: print the hosts
+      debug: msg={{ item }}
+      with_items: "{{ groups['tag_global_id_'+farm_name+'_postgres'] }}"
+      tags:
+        - create
+    - name: print the hosts
+      debug: msg={{ item }}
+      with_items: "{{ groups['tag_global_id_'+farm_name+'_vertica'] }}"
+      tags:
+        - create
+
+
+# - hosts: vrtl
+#   name: deploy
+#   user: centos
+#   gather_facts: true
+#   vars:
+#     vertica_database_name: CIDB2
+#     vertica_package_location: /tmp/vertica-7.2.3-0.x86_64.RHEL6.rpm
+#   roles:
+#     - {role: ansible-vertica,
+#       vertica_group: "{{ groups[vrtl]}}",
+#       vertica_cluster: "{{ ec2.instances }}",
+#       become: yes, become_user: root,
+#       tags: [vertica]}
+#     - vertica
+# # file: postgresql.yml
+# # - hosts: postgres
+# - hosts: tag_Name_PG_Jony
+#   remote_user: centos
+#   # private_key_file: '/Users/cohenjo/HPEOneDrive/OneDrive - Hewlett Packard Enterprise/Documents/Amazon AWS/Tunnelblick/mgmt-eu.pem'
+#   vars:
+#     master: yes
+#     pg_env:
+#       PATH: /usr/pgsql-9.6/bin:/usr/local/bin:/bin:$PATH
+#       LOG_DIR: /var/log/maas/pg_log
+#       PGDATA: /DATA/9.6/data
+#
+#   environment: "{{pg_env}}"
+#   vars_files:
+#     - group_vars/PG-Master
+#   roles:
+#     - { role: ansible-repmgr , become: yes, become_user: root}
+#
+#
+# # - hosts: postgres
+# - hosts: tag_Role_PG_Replica
+#   remote_user: centos
+#   # private_key_file: '/Users/cohenjo/HPEOneDrive/OneDrive - Hewlett Packard Enterprise/Documents/Amazon AWS/Tunnelblick/mgmt-eu.pem'
+#   vars:
+#     master: no
+#     pg_env:
+#       PATH: /usr/pgsql-9.6/bin:/usr/local/bin:/bin:$PATH
+#       LOG_DIR: /var/log/maas/pg_log
+#       PGDATA: /DATA/9.6/data
+#
+#   environment: "{{pg_env}}"
+#   vars_files:
+#     - group_vars/PG-Replica-launched
+#   roles:
+#     - { role: ansible-repmgr , become: yes, become_user: root}
