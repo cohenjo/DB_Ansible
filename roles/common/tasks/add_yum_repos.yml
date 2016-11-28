@@ -3,9 +3,9 @@
 - name: Clean all repositoies files
   shell: rm -rf /etc/yum.repos.d/*
 
-- name: copy yum.repo folder
+- name: copy yum.repos folder
   copy:
-    src: yum.repo.d/
+    src: yum.repos.d/
     dest: "/etc/yum.repos.d/"
     owner: root
     group: root
