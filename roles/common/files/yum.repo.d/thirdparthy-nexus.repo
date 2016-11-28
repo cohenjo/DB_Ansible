@@ -1,6 +1,6 @@
 [thirdparty-nexus]
 name=3rd party
-baseurl=http://35.156.104.150/repository/3d-party/
+baseurl=http://10.250.1.23/repository/3d-party/
 enabled=1
 protect=0
 gpgcheck=0

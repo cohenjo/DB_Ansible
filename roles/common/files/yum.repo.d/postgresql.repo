@@ -1,5 +1,5 @@
 [pgdg96]
 name=PostgreSQL 9.6 $releasever - $basearch
-baseurl=http://35.156.104.150/repository/postgresql-9.6/
+baseurl=http://10.250.1.23/repository/postgresql-9.6/
 enabled=1
 gpgcheck=0

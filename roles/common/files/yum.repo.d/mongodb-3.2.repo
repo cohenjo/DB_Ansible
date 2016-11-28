@@ -1,5 +1,5 @@
 [mongodb-3.2-nexus]
 name=MongoDB Repository
-baseurl=http://35.156.104.150/repository/mongodb-3.2/
+baseurl=http://10.250.1.23/repository/mongodb-3.2/
 gpgcheck=0
 enabled=1
