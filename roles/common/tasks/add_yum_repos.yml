@@ -1,12 +1,12 @@
 ---
 
 - name: Clean all repositoies files
-  shell: rm -rf /etc/yum.repo.d/*
+  shell: rm -rf /etc/yum.repos.d/*
 
 - name: copy yum.repo folder
   copy:
     src: yum.repo.d/
-    dest: "/etc/yum.repo.d/"
+    dest: "/etc/yum.repos.d/"
     owner: root
     group: root
     mode: 0755
