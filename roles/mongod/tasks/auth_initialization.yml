@@ -23,11 +23,14 @@
 - name: create admin users
   mongodb_user:
     database: admin
+    login_user: "{{ mongodb_user_admin_name }}"
+    login_password: "{{ mongodb_user_admin_password }}"
     name: "{{ item.name }}"
     password: "{{ item.password }}"
     update_password: "{{ mongodb_user_update_password | default('always') }}"
     roles: "{{ item.roles }}"
     login_port: "{{ mongodb_net_port | default(27017) }}"
+    replica_set: "{{ mongodb_replication_replset }}"
   with_items:
     - {
       name: "{{ mongodb_user_admin_name }}",
@@ -63,12 +66,13 @@
     database: "{{ item.database }}"
     name: "{{ item.name }}"
     password: "{{ item.password }}"
-    update_password: "{{ mongodb_user_update_password | default(always)  }}"
+    update_password: "{{ mongodb_user_update_password | default('always')  }}"
     roles: "{{ item.roles }}"
     login_user: "{{ mongodb_user_admin_name }}"
     login_password: "{{ mongodb_user_admin_password }}"
     login_port: "{{ mongodb_login_port|default(27017) }}"
     login_host: "{{ mongodb_login_host|default('localhost') }}"
+    replica_set: "{{ mongodb_replication_replset }}"
   with_items:
     - "{{ mongodb_users | default([]) }}"
   no_log: true

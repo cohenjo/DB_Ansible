@@ -93,7 +93,7 @@
   shell: /usr/bin/mongo admin /tmp/repset_init.js
   run_once: true
   ignore_errors: true
-  tags:[repset_init]
+  tags: [repset_init]
 
 - include: auth_initialization.yml
   tags: [users]

@@ -55,8 +55,8 @@ mongodb_users:
 }
 
 # names and passwords for administrative users
-mongodb_user_admin_name: siteUserAdmin
-mongodb_user_admin_password: passw0rd
+mongodb_user_admin_name: admin
+mongodb_user_admin_password: admin
 
 mongodb_root_admin_name: siteRootAdmin
 mongodb_root_admin_password: passw0rd
