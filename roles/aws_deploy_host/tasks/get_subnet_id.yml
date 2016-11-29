@@ -1,0 +1,22 @@
+---
+
+- name: Pring host
+  debug:
+    var: host
+
+- name: Get subnet by name
+  ec2_vpc_subnet_facts:
+    region: "{{ hosts[host].aws_region }}"
+    filters:
+      "tag:Name": "{{ hosts[host].subnet_name }}"
+      "tag:farm": "PavelTest"
+  register: ec2_subnet
+
+- name: Pring subnet ids
+  debug:
+    var: ec2_subnet
+
+- name: Create EC2 instance
+  include: ec2_deploy_host.yml
+  vars:
+    subnet_id: "{{ ec2_subnet.subnets[0].id }}"
