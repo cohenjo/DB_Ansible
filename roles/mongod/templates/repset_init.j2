@@ -20,7 +20,7 @@ rs.reconfig(
 {
   "_id" : "SAW",
   "members" : [
-    {% for host in groups['mngl'] %}
+    {% for host in mongo_group %}
      {
        "_id" : {{loop.index0}},
        "host" : "{{ host }}:{{ mongodb_net_port }}"

@@ -10,3 +10,11 @@
     owner: root
     group: root
     mode: 0755
+
+- name: copy pip.conf
+  copy:
+    src: pip.conf
+    dest: "/etc/pip.conf"
+    owner: root
+    group: root
+    mode: 0755

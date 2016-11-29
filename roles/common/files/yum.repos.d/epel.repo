@@ -1,0 +1,5 @@
+[Extra_enterprice_linux_repo]
+name=Extra_enterprice_linux_repo
+baseurl=http://10.250.1.23/repository/Extra_enterprice_linux_repo/
+enabled=1
+gpgcheck=0

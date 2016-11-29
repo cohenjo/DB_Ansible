@@ -49,13 +49,14 @@
 #
 #     # - set_fact: mongodb_login_host="{{ ec2.instances[0].private_ip }}"
 
-- hosts: tag_global_id_{{farm_name}}_mongo
+- hosts: tag_global_id_{{farm_name}}_Mongo
   name: deploy
   user: centos
   gather_facts: true
   vars:
     # It's a 'master' node
-    mongodb_login_host: "{{ groups['tag_global_id_'+farm_name+'_mongo'][0] }}"
+    mongodb_login_host: "{{ groups['tag_global_id_'+farm_name+'_Mongo'][0] }}"
+    mongo_group: "{{ groups['tag_global_id_'+farm_name+'_Mongo'] }}"
   roles:
     - {role: common, become: yes, become_user: root, io_sched: noop, io_rh: 32 , thp_policy: never}
     - {role: mongod,become: yes, become_user: root, tags: [mongo]}

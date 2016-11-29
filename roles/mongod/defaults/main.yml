@@ -8,8 +8,6 @@ mongodb_user: mongo
 
 mongod_iface: '{{ ansible_default_ipv4.interface }}'
 
-mongodb_replication_oplogsize: 1024
-
 ## net Options
 mongodb_net_bindip: 127.0.0.1                    # Comma separated list of ip addresses to listen on
 mongodb_net_http_enabled: false                  # Enable http interface
@@ -44,8 +42,8 @@ mongodb_systemlog_path: /var/log/mongo/{{ mongodb_user }}.log   # Log file to se
 ## replication Options
 mongodb_replication_replset: SAW                     # Enable replication <setname>[/<optionalseedhostlist>]
 mongodb_replication_replindexprefetch: "all"      # specify index prefetching behavior (if secondary) [none|_id_only|all]
-# mongodb_replication_oplogsize: 1024               # specifies a maximum size in megabytes for the replication operation log
-mongodb_replication_oplogsize: 128               # specifies a maximum size in megabytes for the replication operation log
+mongodb_replication_oplogsize: 1024               # specifies a maximum size in megabytes for the replication operation log
+# mongodb_replication_oplogsize: 128               # specifies a maximum size in megabytes for the replication operation log
 
 mongodb_security_authorization: "enabled"
 mongodb_users:

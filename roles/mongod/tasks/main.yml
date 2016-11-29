@@ -3,11 +3,12 @@
 - include: host.yml
   tags: [host]
 
-- name: Create the hosts file for all machines
-  template: src=hosts.j2 dest=/etc/hosts
-
-- name: Create the repository for 10Gen
-  copy: src=10gen.repo.j2 dest=/etc/yum.repos.d/10gen.repo
+- name: debug group
+  debug: msg={{ item }}
+  with_items: "{{ mongo_group }}"
+#
+# - name: Create the hosts file for all machines
+#   template: src=hosts.j2 dest=/etc/hosts
 
 
 - name: create filesystem for DATA
@@ -50,7 +51,7 @@
   file: path={{ mongodb_datadir_prefix }}/db owner={{ mongodb_user }} group={{ mongodb_user }} state=directory
 
 - name: Install the latest pymongo package
-  pip: name=pymongo state=latest use_mirrors=no
+  pip: name=pymongo state=latest use_mirrors=no extra_args='--trusted-host 10.250.1.23'
 
 - name: create log directory for mongodb
   file: path=/var/log/mongo state=directory owner={{ mongodb_user }} group={{ mongodb_user }}
@@ -91,6 +92,8 @@
 - name: Initialize the replication set
   shell: /usr/bin/mongo admin /tmp/repset_init.js
   run_once: true
+  ignore_errors: true
+  tags:[repset_init]
 
 - include: auth_initialization.yml
   tags: [users]
