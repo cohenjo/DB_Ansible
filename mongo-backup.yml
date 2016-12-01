@@ -1,0 +1,37 @@
+# File: mongo-backup.yml
+# Description: backup playbook to snapshot a running mongo cluster.
+# to run use: ansible-playbook -i inventories/ec2.py mongo-backup.yml -e farm_name=PavelTest -vvv
+
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  vars:
+    region: eu-central-1
+    mongodb_backup_host: "{{ groups['tag_global_id_'+farm_name+'_Mongo'][1] }}"
+    mongo_group: "{{ groups['tag_global_id_'+farm_name+'_Mongo'] }}"
+  tasks:
+    - name: gather facts from Mongo server
+      action: ec2_facts
+      delegate_to: "{{item}}"
+      delegate_facts: True
+      with_items: "{{ mongodb_backup_host }}"
+      register: ansible_facts
+
+    - ec2_snapshot:
+        instance_id: "{{ hostvars[mongodb_backup_host]['ansible_ec2_instance_id'] }}"
+        device_name: /dev/sdb
+        region: eu-central-1
+        wait: "{{ should_snap_wait | default('False') }}"
+        aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+        description: snapshot of /data from Mongo-Jony
+        snapshot_tags:
+          db: Mongo
+          frequency: Daily
+          source: /data
+      register: snap_data
+
+    - name: print volume name
+      action: debug msg="The volume is {{ snap_data }}"
+  # roles:
+  # - { role: mongo-backup }

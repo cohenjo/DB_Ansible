@@ -8,6 +8,13 @@ thp_policy: always
 common_packages:
  - libselinux-python
  - chrony
+ - python-pip
+
+common_python_packages:
+  - boto3
+  - Psycopg2
+  - pymongo
+  - barman
 
 ulimits:
   - {domain: "*", type: "-", litem: "nproc", value: 64000}
@@ -19,3 +26,4 @@ kernel_params:
   - {name: kernel.shmall, value: "{{ansible_memtotal_mb*256}}"}
   - {name: fs.file-max,   value: 40000 }
   - {name: vm.zone_reclaim_mode, value: 0 }
+  - {name: vm.max_map_count, value: 262144 }

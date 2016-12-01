@@ -3,13 +3,17 @@
 
 - include: add_yum_repos.yml
   tags: [host]
-  
+
 - include: host.yml
   tags: [host]
 
 - name: Install the common packages
   package: name={{ item }} state=latest
   with_items: "{{ common_packages }}"
+
+- name: install common python packages (pip)
+  pip: name={{ item }} state=latest use_mirrors=no extra_args='--trusted-host 10.250.1.23'
+  with_items: "{{ common_python_packages }}"
 
 - name: disable selinux
   selinux: state=disabled
