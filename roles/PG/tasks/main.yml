@@ -96,32 +96,6 @@
   become: yes
   become_user: root
 
-- name: run the pgbouncer configuration script.
-  shell: /var/lib/pgsql/scripts/pgbouncer.sh
-  become: yes
-  become_user: root
-
-- name: start the pgbouncer service
-  systemd:
-    name: pgbouncer.service
-    state: started
-    enabled: False
-  become: yes
-  become_user: root
-
-
-- name: log rotate configuration for pgbouncer
-  template: src=pgbouncer/logrotate.j2 dest=/etc/logrotate.d/postgresql-common
-
-- name: "create incremental pgBadger report hourly."
-  cron:
-    name: "hourly pgBadger"
-    special_time: hourly
-    user: "{{ postgres_user }}"
-    job: "/usr/bin/pgbadger -I -j 4 -O /var/log/maas/pgBadger -R 4 -q \
-        /var/log/maas/pg_log/postgresql-$(date --date yesterday +%a).log \
-        /var/log/maas/pg_log/postgresql-$(date +%a).log"
-    cron_file: ansible_pgbadger
 
 
 
@@ -146,3 +120,34 @@
   become_user: postgres
   when: "{{ master | bool }}"
   tags: [master, pg-configure]
+
+- name: run the pgbouncer configuration script.
+  shell: /var/lib/pgsql/scripts/pgbouncer.sh
+  become: yes
+  become_user: root
+
+- name: start the pgbouncer service
+  systemd:
+    name: pgbouncer.service
+    state: started
+    enabled: False
+  become: yes
+  become_user: root
+
+
+- name: log rotate configuration for pgbouncer
+  template: src=logrotate_pgbouncer.j2 dest=/etc/logrotate.d/postgresql-common
+  become: yes
+  become_user: root
+
+- name: "create incremental pgBadger report hourly."
+  cron:
+    name: "hourly pgBadger"
+    special_time: hourly
+    user: "{{ postgres_user }}"
+    job: "/usr/bin/pgbadger -I -j 4 -O /var/log/maas/pgBadger -R 4 -q \
+        /var/log/maas/pg_log/postgresql-$(date --date yesterday +%a).log \
+        /var/log/maas/pg_log/postgresql-$(date +%a).log"
+    cron_file: ansible_pgbadger
+  become: yes
+  become_user: root

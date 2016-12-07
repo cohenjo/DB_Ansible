@@ -14,6 +14,17 @@ repmgr_ssh_public_key: roles/PG/files/ssh/id_rsa.pub
 repmgr_logfacility: STDERR
 repmgr_logfile: /var/log/maas/repmgr-96.log
 
+master: yes
+PG_version: 9.6
+PG_HOME: "/usr/pgsql-{{ PG_version }}"
+PG_BIN: "{{ PG_HOME }}/bin"
+pg_env:
+  PATH: "{{ PG_BIN }}:/bin:/sbin:$PATH"
+  LOG_DIR: /var/log/maas/pg_log
+  PGDATA: "/DATA/{{ PG_version }}/data"
+  PGSETUP_INITDB_OPTIONS: "--data-checksums"
+
+
 repmgr_crons:
   cleanup:
     name: "Removing repl_monitor old records"

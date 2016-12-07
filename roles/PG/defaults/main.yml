@@ -30,7 +30,7 @@ created_users:
   - name: pgbouncer
     password: pgbouncer_admin1234
     roles: NOSUPERUSER
-
-config:
-  log_rotate_retain_count: 2
-  log_rotate_retain_period: daily
+pgbouncer:
+  config:
+    log_rotate_retain_count: 2
+    log_rotate_retain_period: daily

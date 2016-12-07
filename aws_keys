@@ -2,3 +2,7 @@ export AWS_ACCESS_KEY_ID='AKIAJGFRJIYLUCSO3VEQ'
 export AWS_SECRET_ACCESS_KEY='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'
 export EC2_REGION='eu-central-1'
 export ANSIBLE_PRIVATE_KEY_FILE='/Users/cohenjo/HPEOneDrive/OneDrive - Hewlett Packard Enterprise/Documents/Amazon AWS/Tunnelk/mgmt-eu.pem'
+
+ssh-add '/Users/cohenjo/HPEOneDrive/OneDrive - Hewlett Packard Enterprise/Documents/Amazon AWS/Tunnelblick/mgmt-eu.pem' 
+export https_proxy=16.82.112.11:8080
+export http_proxy=16.82.112.11:8080

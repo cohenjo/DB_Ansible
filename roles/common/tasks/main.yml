@@ -10,6 +10,7 @@
 - name: Install the common packages
   package: name={{ item }} state=latest
   with_items: "{{ common_packages }}"
+  ignore_errors: true
 
 - name: install common python packages (pip)
   pip: name={{ item }} state=latest use_mirrors=no extra_args='--trusted-host 10.250.1.23'

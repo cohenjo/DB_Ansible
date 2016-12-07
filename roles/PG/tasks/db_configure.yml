@@ -35,3 +35,10 @@
   #     state: present
   #   become: yes
   #   become_user: postgres
+
+# add powa libs:
+# wget https://github.com/dalibo/powa-archivist/archive/REL_3_0_0.tar.gz
+# shared_preload_libraries='pg_stat_statements,powa,pg_stat_kcache,pg_qualstats'
+# psql -U postgres -f install_all.sql
+# CREATE DATABASE
+# You are now connected to database "powa" as user "postgres".

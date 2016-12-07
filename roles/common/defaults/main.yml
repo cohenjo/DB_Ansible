@@ -8,6 +8,7 @@ thp_policy: always
 common_packages:
  - libselinux-python
  - chrony
+ - deltarpm
  - python-pip
 
 common_python_packages:
@@ -19,6 +20,7 @@ common_python_packages:
 ulimits:
   - {domain: "*", type: "-", litem: "nproc", value: 64000}
   - {domain: "*", type: "-", litem: "nofile", value: 65536}
+  - {domain: "*", type: "-", litem: "stack", value: 65536}
 
 kernel_params:
   - {name: "vm.overcommit_memory", value: 2 }

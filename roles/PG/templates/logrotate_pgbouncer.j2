@@ -6,7 +6,7 @@
     compress
     notifempty
     missingok
-    create 0644 {{ pgbouncer.user }} {{ pgbouncer.group }}
+    create 0644 postgres postgres
     postrotate
         /etc/init.d/pgbouncer reload
 

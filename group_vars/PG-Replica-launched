@@ -25,7 +25,6 @@ repmgr_cron:
   weekday: '*'
   user: "postgres"
   month: '*'
-  weekday: '*'
   disabled: false
 
 barman_ssh_private_key: roles/PG/files/ssh/id_rsa
