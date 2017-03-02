@@ -1,2 +1,8 @@
+
 aws_keys
 *.retry
+
+
+inventories/hosts
+
+inventories/chef.ini

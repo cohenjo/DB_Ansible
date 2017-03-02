@@ -29,7 +29,7 @@ class ChefInventory:
 
         if self.chef_server_url and self.client_key and self.client_name:
             print("Using chef ini values", file=sys.stderr)
-            self.api = chef.ChefAPI(self.chef_server_url, self.client_key, self.client_name,ssl_verify=self.chef_ssl)
+            self.api = chef.ChefAPI(self.chef_server_url, self.client_key, self.client_name)
         else:
 
             pemfile = os.environ.get('CHEF_PEMFILE')
@@ -38,7 +38,7 @@ class ChefInventory:
 
             if not self.api:
                 if pemfile is None or username is None or chef_server_url is None:
-                    print("Set CHEF_PEMFILE, CHEF_USER and CHEF_API_SERVER environment vars. They might be located under ~/.chef/knife_local.rb or ~/.chef/knife.rb")
+                    print("Set CHEF_PEMFILE, CHEF_USER and CHEF_SERVER_URL environment vars. They might be located under ~/.chef/knife_local.rb or ~/.chef/knife.rb")
                     exit(0)
 
                 self.api=chef.ChefAPI(chef_server_url, pemfile, username)
@@ -66,8 +66,6 @@ class ChefInventory:
             self.client_key = config.get('chef', 'client_key')
         if config.has_option('chef', 'client_name'):
             self.client_name = config.get('chef', 'client_name')
-        if config.has_option('chef', 'chef_ssl'):
-            self.chef_ssl = config.get('chef', 'chef_ssl')
 
 
     def refresh_cache(self):
@@ -127,48 +125,61 @@ class ChefInventory:
 
     def list_nodes(self):
         groups = {}
+        hostvars = {}
 
         data = self.read_cache()
         for name, node in data.iteritems():
             # make sure node is configured/working
             if ( "ipaddress" in node["automatic"].keys() ):
-                ip=node["automatic"]["ipaddress"] 
+                if name not in hostvars:
+                    hostvars[name] = {}
+                hostvars[name]['ansible_ssh_host'] = node["automatic"]["ipaddress"]
             else:
                 continue
-       
+
             # create a list of environments
             environment = "chef_environment_%s" % self.to_safe(node["chef_environment"])
             if environment not in groups:
                 groups[environment] = []
-            groups[environment].append(ip)
+            groups[environment].append(name)
 
             for r in self.check_key(node["automatic"], "roles"):
                 role = "role_%s" % self.to_safe(r)
                 if role not in groups:
                     groups[role] = []
-                groups[role].append(ip)
+                print("debug shit: %s " % role)
+                try:
+                  groups[role].append(ip)
+                except:
+                  print("nothing to see")
             
             for r in self.check_key(node['automatic'], 'expanded_run_list'):
                 recipe = "recipe_%s" % self.to_safe(r)
                 if recipe not in groups: groups[recipe] = []
-                groups[recipe].append(ip)
+                try:
+                  groups[recipe].append(ip)
+                except:
+                  print("nothing to see")
 
             for tag in self.check_key(node['normal'], 'tags'):
                 tag = "tag_%s" % self.to_safe(tag)
                 if tag not in groups: groups[tag] = []
-                groups[tag].append(ip)
+                try:
+                  groups[tag].append(ip)
+                except:
+                  print("group no ip")
 
             for i in node["run_list"]:
                 m = re.match(r'(role|recipe)\[(.*)\]', i)
                 item = "%s_%s" % (self.to_safe(m.group(1)), self.to_safe(m.group(2)))
                 if item not in groups:
                     groups[item] = []
-                groups[item].append(ip)
+                groups[item].append(name)
 
         # remove any duplicates
         groups = {key : list(set(items)) for (key, items) in groups.iteritems() }
 
-        meta = { "_meta" : { "hostvars" : {} } }
+        meta = { "_meta" : { "hostvars" : hostvars } }
         groups.update(meta) 
 
         print(self.json_format_dict(groups, pretty=True))
@@ -195,5 +206,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
 

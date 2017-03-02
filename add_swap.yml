@@ -1,0 +1,20 @@
+---
+- hosts: swap
+  remote_user: jonyc
+  become: yes
+  become_user: root
+  tasks:
+  - name: create the file to be used for swap
+    command: dd if=/dev/zero of=/mnt/swapfile bs=1G count=16
+
+  - name: change swap file permissions
+    file: path=/mnt/swapfile owner=root group=root mode=0600
+
+  - name: format the file for swap
+    command: mkswap /mnt/swapfile
+
+  - name: add the file to the system as a swap file
+    command: swapon /mnt/swapfile
+
+  - name: write swap entry in fstab
+    mount: name=none src=/mnt/swapfile fstype=swap opts=sw passno=0 dump=0 state=present
