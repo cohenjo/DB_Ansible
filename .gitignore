@@ -6,3 +6,5 @@ aws_keys
 inventories/hosts
 
 inventories/chef.ini
+
+inventories/mongo_hosts
