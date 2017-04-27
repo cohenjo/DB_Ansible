@@ -1,0 +1,36 @@
+---
+- hosts: cassAus
+  remote_user: jonyc
+  become: yes
+  become_user: root
+  tasks:
+  - name: partition the disk
+    parted:
+      device: /dev/sda
+      number: 6
+      state: present
+
+  - package: name=xfsprogs state=latest
+
+  - filesystem:
+      fstype: xfs
+      dev: /dev/sda6
+
+  # - name: clear the node and drain
+  #   command: nodetool disablegossip ; nodetool disablebinary ; nodetool disablethrift ; nodetool drain ;
+  - service:
+      name: cassandra
+      state: stopped
+  - command: mv /var/lib/cassandra /var/lib/cassandra_bck
+
+  - name: cassandra
+    mount:
+      name: /var/lib/cassandra
+      src: /dev/sda6
+      fstype: xfs
+      opts: noatime,nodiratime,rw
+      state: present
+  - command: mv /var/lib/cassandra_bck/* /var/lib/cassandra/
+  - service:
+      name: cassandra
+      state: started

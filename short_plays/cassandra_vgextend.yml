@@ -1,0 +1,50 @@
+---
+# - hosts: cass42
+- hosts: cassAus
+  remote_user: jonyc
+  become: yes
+  become_user: root
+  tasks:
+  # - name: add the disk to the VG
+  #   lvg:
+  #     vg: VGcassandra
+  #     pvs: /dev/xvdb,/dev/xvdc
+  #
+  # - name: extend the lv to take on the new size
+  #   lvol:
+  #     vg: VGcassandra
+  #     lv: LVcassandra
+  #     size: +100%FREE
+  #   register: lvm
+  #
+  # - name: extend the fs
+  #   command: xfs_growfs /var/lib/cassandra
+  #   when: lvm.changed
+
+  - parted:
+      device: /dev/sda
+      number: 6
+      state: present
+
+  - filesystem:
+      fstype: xfs
+      dev: /dev/sda6
+
+  - name: clear the node and drain
+    command: nodetool disablegossip ; nodetool disablebinary ; nodetool disablethrift ; nodetool drain ;
+  - service:
+      name: cassandra
+      state: stop
+  - command: mv /var/lib/cassandra /var/lib/cassandra_bck
+
+  - name: cassandra
+    mount:
+      path: /var/lib/cassandra
+      src: /dev/sda6
+      fstype: xfs
+      opts: noatime,nodiratime,rw
+      state: present
+  - command: mv /var/lib/cassandra_bck/* /var/lib/cassandra/
+  - service:
+      name: cassandra
+      state: start

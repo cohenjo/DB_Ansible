@@ -1,28 +1,19 @@
 ---
 
 - name: casandra rolling restart
-  hosts: cassandra
+  hosts: cassAus 
   remote_user: jonyc
   serial: 1
   become: yes
   become_user: root
   tasks:
-      # place db into backup mode
+    - name: chmod the script
+      file:
+        path: /opt/wixpress/dbutils/cassandra/restart-node.sh 
+        mode: 0755
     - name: clear the node and drain
-      command: nodetool disablegossip ; nodetool disablebinary ; nodetool disablethrift ; nodetool drain ;
-    - service:
-        name: cassandra
-        state: restarted
-    # wait until the string "completed" is in the file /tmp/foo before continuing
-    - name: wait for normal state
-      wait_for:
-        path: /var/log/cassandra/system.log
-        search_regex:  state jump to NORMAL
-    - name: clear the node and drain
-      command: nodetool disablegossip ; nodetool disablebinary ; nodetool disablethrift ; nodetool drain ;
-    - shell: /usr/bin/uptime
+      command: /opt/wixpress/dbutils/cassandra/restart-node.sh {{ ansible_eth1.ipv4.address }}
       register: result
-
     - debug:
         var: result
         verbosity: 1
