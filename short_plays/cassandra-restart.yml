@@ -1,7 +1,7 @@
 ---
 
 - name: casandra rolling restart
-  hosts: cassAus 
+  hosts: cass42 
   remote_user: jonyc
   serial: 1
   become: yes
@@ -12,7 +12,7 @@
         path: /opt/wixpress/dbutils/cassandra/restart-node.sh 
         mode: 0755
     - name: clear the node and drain
-      command: /opt/wixpress/dbutils/cassandra/restart-node.sh {{ ansible_eth1.ipv4.address }}
+      command: /opt/wixpress/dbutils/cassandra/restart-node.sh {{ ansible_eth0.ipv4.address }}
       register: result
     - debug:
         var: result
