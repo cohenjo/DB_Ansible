@@ -1,6 +1,0 @@
-#The site wide list of mongodb servers
-
-[mngl]
-10.250.2.5
-10.250.2.6
-10.250.2.7
