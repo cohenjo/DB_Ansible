@@ -1,0 +1,8 @@
+- hosts: all
+  user: jonyc
+  gather_facts: true
+  vars:
+    # It's a 'master' node
+    username: root
+  roles:
+    - {role: MySQL,become: yes, become_user: root, tags: [test]}

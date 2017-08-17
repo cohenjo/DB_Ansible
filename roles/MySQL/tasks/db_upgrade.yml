@@ -1,0 +1,112 @@
+---
+
+- name: remove thread_concurrency
+  lineinfile:
+    dest: "{{ item.path }}"
+    regexp: '^thread_concurrency'
+    backrefs: yes
+    state: absent
+  with_items: "{{cnf_files.files}}"
+
+- name: remove thread_concurrency
+  lineinfile:
+    dest: "{{ item.path }}"
+    regexp: '^innodb_additional_mem_pool_size'
+    backrefs: yes
+    state: absent
+  with_items: "{{cnf_files.files}}"
+
+- name: comment out bin log
+  lineinfile:
+    dest: "{{ item.path }}"
+    regexp: '^(log_bin\s.*)'
+    line: '# \1'
+    backrefs: yes
+    state: present
+  with_items: "{{cnf_files.files}}"
+
+- name: set the systemd env for mysql upgrade
+  shell: "systemctl set-environment MYSQLD_OPTS='--skip-slave-start --skip-networking'"
+  args:
+    executable: /bin/bash
+  when: (ansible_distribution == 'Debian' and ansible_distribution_release == 'jessie') or ansible_distribution == 'CentOS'
+  tags:
+    - systemd
+    - skip
+
+- name: verify ownership of /var/lib/mysql
+  file:
+    path: /var/lib/mysql
+    owner: mysql
+    group: dbmaster
+    mode: 0755
+    recurse: yes
+    state: directory
+
+- name: verify of /var/lib/mysql-files exists
+  file:
+    path: /var/lib/mysql-files
+    owner: mysql
+    group: mysql
+    mode: 0770
+    recurse: yes
+    state: directory
+
+
+- name: Start for upgrade mysql using systemd
+  service:
+    name: "{{ item.path.split('/')[-1] }}"
+    state: started
+  with_items: "{{services.files}}"
+  when: (ansible_distribution == 'Debian' and ansible_distribution_release == 'jessie') or ansible_distribution == 'CentOS'
+  tags:
+    - systemd
+    - skip
+
+- name: Start for upgrade mysql using service
+  service:
+    name: "{{ item.path.split('/')[-1] }}"
+    state: started
+    args: "--skip-slave-start --skip-networking"
+  with_items: "{{services.files}}"
+  when: ansible_distribution == 'Debian' and ansible_distribution_release == 'wheezy'
+  tags:
+    - service
+    # - skip
+
+- pause:
+    seconds: 200
+  # tags: skip
+
+# # 	0.	Run mysql_upgrade
+- name: Run mysql_upgrade
+  shell: "/usr/bin/mysql_upgrade -u {{ username }} -p{{password}} -S {{ item }} >> /tmp/mysql_upgrade_log"
+  args:
+    chdir: /tmp
+   # creates: /tmp/mysql_upgrade_log
+    executable: /bin/bash
+  with_items: "{{sockets.stdout_lines}}"
+  # tags: skip
+
+- name: resume out bin log
+  lineinfile:
+    dest: "{{ item.path }}"
+    regexp: '^# (log_bin\s.*q)'
+    line: '\1'
+    backrefs: yes
+    state: present
+  with_items: "{{cnf_files.files}}"
+
+- name: unset the systemd env for mysql upgrade
+  shell: "systemctl unset-environment MYSQLD_OPTS"
+  args:
+    executable: /bin/bash
+  when: (ansible_distribution == 'Debian' and ansible_distribution_release == 'jessie') or ansible_distribution == 'CentOS'
+  tags:
+    - systemd
+
+- name: restart after mysql upgrade
+  service:
+    name: "{{ item.path.split('/')[-1] }}"
+    state: restarted
+  with_items: "{{services.files}}"

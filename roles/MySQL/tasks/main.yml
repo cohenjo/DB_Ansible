@@ -1,0 +1,192 @@
+---
+
+
+- name: verify mysql version is 5.6
+  shell:  /usr/sbin/mysqld --version | awk '{ print $3 }'
+  register: status
+  tags: skip
+
+- fail:
+    msg: "This server is already upgraded"
+  when: status.stdout|version_compare('5.7', '>=')
+  tags: skip
+
+- name: Silence sensu for 2 hours
+  sensu_silence:
+    subscription: "client:{{ ansible_fqdn }}"
+    creator: jonyc
+    reason: MySQL upgrade.
+    url: "{{ sensu_url }}"
+    expire: 7200
+  ignore_errors: yes
+  tags: skip
+# # 	0.	Stop chef
+- name: lock chef
+  copy:
+    content: "MySQL Upgrade: chef locked until further notice."
+    dest: /tmp/chef.lock
+    force: no
+    group: sys
+    owner: root
+    mode: 0755
+  tags: skip
+
+#find MySQL instances running on the node: (maybe use shell or service for this?)
+- name: find mysql services on the node
+  find:
+    paths: "/etc/init.d/"
+    patterns: "mysql_*"
+  register: services
+
+- name: print the services files
+  debug: msg="service {{ item.path.split('/')[-1] }}"
+  with_items: "{{services.files}}"
+
+- name: just force systemd to reread configs (2.4 and above)
+  systemd: daemon_reload=yes
+  when: ansible_distribution == 'Debian' and ansible_distribution_release == 'jessie'
+  tags:
+    - systemd
+
+- name: find mysql cnf files on the node
+  find:
+    paths: "/etc/mysql/"
+    patterns: "my_*.cnf"
+  register: cnf_files
+
+- name: print the cnf files
+  debug: msg="{{ item.path }}"
+  with_items: "{{cnf_files.files}}"
+
+- name: find mysql sockets on the node
+  shell: "awk '/socket/{print $3}' /etc/mysql/my_*.cnf | uniq"
+  args:
+    executable: /bin/bash
+  check_mode: no
+  register: sockets
+
+- name: print the socket files
+  debug:
+    msg: "socket {{ item }}"
+  with_items: "{{sockets.stdout_lines}}"
+
+- name: set innodb_fast_shutdown to 0
+  mysql_variables:
+    variable: innodb_fast_shutdown
+    value: 0
+    login_unix_socket: "{{ item }}"
+    login_user: "{{ username }}"
+    login_password: "{{password}}"
+  with_items: "{{sockets.stdout_lines}}"
+  tags: skip
+  ignore_errors: yes
+
+- name: innodb_buffer_pool_dump_now dump the buffer pool
+  mysql_variables:
+    variable: innodb_buffer_pool_dump_now
+    value: 'ON'
+    login_unix_socket: "{{ item }}"
+    login_user: "{{ username }}"
+    login_password: "{{password}}"
+  with_items: "{{sockets.stdout_lines}}"
+  tags: skip
+  ignore_errors: yes
+
+- pause:
+    seconds: 10
+  tags: skip
+
+# 	0.	Stop mysql
+- name: Stop mysql
+  service:
+    name: "{{ item.path.split('/')[-1] }}"
+    state: stopped
+  with_items: "{{services.files}}"
+  tags: skip
+
+- name: Change repo setting to new version
+  lineinfile:
+    path: /etc/apt/sources.list.d/mysql.list
+    state: present
+    regexp: '5.6$'
+    line: "deb      \"http://repo.mysql.com/apt/debian/\" {{ ansible_distribution_release }} mysql-5.7"
+  when: ansible_distribution == 'Debian'
+
+- name: Remove mysql 56 repository
+  yum_repository:
+    name: mysql56-community
+    description: MySQL 5.6 Community Server
+    file: mysql-community
+    enabled: no
+    baseurl: http://repo.mysql.com/yum/mysql-5.6-community/el/7/$basearch/
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-mysql
+    gpgcheck: yes
+  when: ansible_distribution == 'CentOS'
+
+- name: enable mysql 57 repository
+  yum_repository:
+    name: mysql57-community
+    description: MySQL 5.7 Community Server
+    file: mysql-community
+    enabled: yes
+    baseurl: http://repo.mysql.com/yum/mysql-5.7-community/el/7/$basearch/
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-mysql
+    gpgcheck: yes
+  when: ansible_distribution == 'CentOS'
+
+- name: upgrade mysql-community-server package
+  yum:
+    name: mysql-community-server
+    state: latest
+    disablerepo: percona
+  when: ansible_distribution == 'CentOS'
+
+
+# # 	0.	Upgrade binaries
+- name: Upgrade all packages to the latest version
+  apt:
+    name: "mysql-server"
+    update_cache: yes
+    state: latest
+    force: yes
+  when: ansible_distribution == 'Debian'
+
+
+- include: db_upgrade.yml
+  tags: [master, db-upgrade]
+
+- name: Upgrade libmysqlclient-dev to the latest version
+  apt:
+    name: "libmysqlclient-dev"
+    update_cache: yes
+    state: latest
+    force: yes
+  tags:
+    - post
+  when: ansible_distribution == 'Debian'
+
+- name: install mysql gem
+  shell: "/opt/chef/embedded/bin/gem install mysql2"
+  args:
+    executable: /bin/bash
+  tags:
+    - post
+
+- name: Upgrade percona-xtrabackup-24 to the latest version
+  package:
+    name: "percona-xtrabackup-24"
+    state: latest
+  tags:
+    - post
+
+# 	0.	open chef
+- file:
+    path: /tmp/chef.lock
+    state: absent
+# # 	0.	Open sensu 
+- name: remove sensu Silence
+  sensu_silence:
+    subscription: "client:{{ ansible_fqdn }}"
+    url: "{{ sensu_url }}"
+    state: absent
+  ignore_errors: yes

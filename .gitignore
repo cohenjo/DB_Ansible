@@ -3,8 +3,4 @@ aws_keys
 *.retry
 
 
-inventories/hosts
-
-inventories/chef.ini
-
-inventories/mongo_hosts
+inventories/*
