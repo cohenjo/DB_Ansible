@@ -15,7 +15,7 @@
   sensu_silence:
     subscription: "client:{{ ansible_fqdn }}"
     creator: jonyc
-    reason: MySQL upgrade.
+    reason: MySQL upgrade
     url: "{{ sensu_url }}"
     expire: 7200
   ignore_errors: yes
@@ -180,9 +180,9 @@
     - post
 
 # 	0.	open chef
-- file:
-    path: /tmp/chef.lock
-    state: absent
+# - file:
+#     path: /tmp/chef.lock
+#     state: absent
 # # 	0.	Open sensu 
 - name: remove sensu Silence
   sensu_silence:

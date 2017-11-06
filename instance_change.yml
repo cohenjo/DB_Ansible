@@ -1,0 +1,39 @@
+---
+- hosts: all
+  remote_user: jonyc
+  vars:
+    region: eu-west-1
+    instance_type: r4.2xlarge
+    profile: production_84
+  tasks:
+    - name: get instance id
+      uri:
+        url: http://169.254.169.254/latest/meta-data/instance-id
+        return_content: yes
+      register: instance_id
+    # - name: get instance id
+    #   shell:  curl -sG http://169.254.169.254/latest/meta-data/instance-id
+    #   register: instance_id
+    - name: stop instance
+      ec2:
+        instance_ids: '{{ instance_id.content }}'
+        region: '{{ region }}'
+        state: stopped
+        profile: '{{ profile }}'
+        wait: True
+      delegate_to: 127.0.0.1
+    - name: change the type
+      ec2_type:
+        region: '{{ region }}'
+        profile: '{{ profile}}'
+        id: '{{ instance_id.content }}'
+      delegate_to: 127.0.0.1
+    - name: Start the sandbox instances
+      ec2:
+        instance_ids: '{{ instance_id.content }}'
+        region: '{{ region }}'
+        profile: '{{ profile }}'
+        state: running
+        wait: True
+        instance_type: '{{ instance_type }}'
+      delegate_to: 127.0.0.1
