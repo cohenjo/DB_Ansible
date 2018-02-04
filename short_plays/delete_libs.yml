@@ -1,0 +1,41 @@
+---
+- hosts: all
+  remote_user: jonyc
+  become: yes
+  become_user: root
+  gather_facts: false
+  tasks:
+  - name: lock chef
+    copy:
+      content: "drop: chef locked until further notice."
+      dest: /tmp/chef.lock
+      force: no
+      group: sys
+      owner: root
+      mode: 0755
+
+  - name: Get running processes
+    shell: "ps -ef | grep -v grep | grep -w sensu | awk '{print $2}'"
+    register: running_processes
+
+  - name: Kill running processes
+    shell: "kill {{ item }}"
+    with_items: "{{ running_processes.stdout_lines }}"
+
+  - name: rm mysql folder
+    shell: "rm -rf /var/lib/mysql"
+    args:
+      executable: /bin/bash
+    ignore_errors: yes
+
+  - name: rm mongo folder
+    shell: "rm -rf /var/lib/mongodb"
+    args:
+      executable: /bin/bash
+    ignore_errors: yes
+
+  - name: rm cassandra folder
+    shell: "rm -rf /var/lib/cassandra"
+    args:
+      executable: /bin/bash
+    ignore_errors: yes

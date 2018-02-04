@@ -1,0 +1,29 @@
+---
+- hosts: all
+  remote_user: jonyc
+  become: yes
+  become_user: root
+  gather_facts: false
+  tasks:
+  # - name: disk usage
+  #   shell: "df -h /var/lib/mysql/"
+  #   register: size
+  #
+  # - name: print the du
+  #   debug:
+  #     msg: "{{ item }}"
+  #   with_items: "{{size.stdout_lines}}"
+
+  - name: find mysql sockets on the node
+    shell: "awk '/socket/{print $3}' /etc/mysql/my_*.cnf | uniq"
+    args:
+      executable: /bin/bash
+    check_mode: no
+    register: sockets
+
+  - name: mysql stat
+    mysql_replication:
+      login_password: "{{password}}"
+      login_user: "root"
+      login_unix_socket: "{{sockets.stdout}}"
+      mode: getslave
