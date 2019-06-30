@@ -1,0 +1,18 @@
+---
+- name:  check mongo shell version
+  shell:   /usr/bin/mongod --version | grep 'db version' |awk -F 'v' '{print $3}'
+  register: mongo_shell_version
+
+- name: Exit if shell is not upgraded
+  fail:
+      msg: The host {{ansible_ssh_host}} mongo shell is on a different version
+  when: mongo_shell_version.stdout != version
+
+- name:  check mongo server version
+  shell:   /usr/bin/mongo --version | grep 'shell' |awk -F 'v' '{print $3}'
+  register: mongo_server_version
+  
+- name: Exit if server is not upgraded
+  fail:
+    msg: The host {{ansible_ssh_host}} mongo server is on a different version
+  when: mongo_server_version.stdout != version

@@ -1,0 +1,56 @@
+---
+- name: get mongo version
+  shell:  /usr/bin/mongod --version | grep 'db version' |awk -F 'v' '{print $3}'
+  register: mongo_version
+
+- name: check mongo version upgraded
+  fail:
+    msg: The host {{ansible_ssh_host}} is already upgraded to {{version}}
+  when: mongo_version.stdout == version
+
+- name: lock chef
+  copy:
+    content: "MongoDB Upgrade: chef locked until further notice."
+    dest: /tmp/chef.lock
+    force: no
+    group: sys
+    owner: root
+    mode: 0755
+  tags: skip
+
+- name: find mongo services on the node
+  shell: systemctl list-unit-files --type service --state enabled,generated | grep mongodb | awk '{print $1}'
+  register: mongo_service
+
+- name: Stop Mongo custom service
+  systemd:
+    name: "{{ mongo_service.stdout }}"
+    state: stopped
+    no_block: no
+     
+
+- name: upgrading mongo version
+  yum:
+    name: 
+        - mongodb-org-server-{{ version }}
+        - mongodb-org-shell-{{ version }}
+        - mongodb-org-tools-{{ version }}
+  when:  ansible_distribution == 'CentOS' 
+
+- name: disabling mongo deafualt service
+  systemd:
+    name: mongod
+    state: stopped
+    enabled: no
+    daemon_reload: yes
+
+- name: Starting Mongo custom service
+  systemd:
+    name: "{{ mongo_service.stdout }}"
+    state: started
+    no_block: no
+
+
+
+
+

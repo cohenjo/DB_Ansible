@@ -1,0 +1,10 @@
+- name: change compatibilty
+  shell:  "mongo --quiet {{ansible_ssh_host}} -u {{ root_user }} -p {{ root_pass }} --authenticationDatabase admin --eval 'db.adminCommand({ setFeatureCompatibilityVersion: '\"'{{ version | regex_replace('.'+version.split('.')[-1],'') }}'\"' } )'"
+
+# - name: get mongo version
+#   shell:  /usr/bin/mongod --version | grep 'db version' |awk -F 'v' '{print $3}'
+#   register: mongo_version
+
+# - name: change protocol version
+#   shell:  "mongo --quiet {{ansible_ssh_host}} -u {{ root_user }} -p {{ root_pass }} --authenticationDatabase admin --eval 'cfg = rs.conf();cfg.protocolVersion=1;rs.reconfig(cfg);'"
+#   when: mongo_version.stdout.find("4.0") != -1

@@ -1,0 +1,33 @@
+---
+- name: adding mongo repo 3.4 centos
+  yum_repository:
+      name: mongodb-org-3.4
+      description: MongoDB Repository
+      file: mongodb-org-3.4
+      enabled: yes
+      baseurl: "https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.4/x86_64/"
+      gpgkey: "https://www.mongodb.org/static/pgp/server-3.4.asc"
+      gpgcheck: no
+  when: ansible_distribution == 'CentOS' 
+
+- name: adding mongo repo 3.6 centos
+  yum_repository:
+      name: mongodb-org-3.6
+      description: MongoDB Repository
+      file: mongodb-org-3.6
+      enabled: yes
+      baseurl: "https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.6/x86_64/"
+      gpgkey: "https://www.mongodb.org/static/pgp/server-3.6.asc"
+      gpgcheck: no
+  when: ansible_distribution == 'CentOS' 
+
+- name: adding mongo repo 4.0 centos
+  yum_repository:
+      name: mongodb-org-4.0
+      description: MongoDB Repository
+      file: mongodb-org-4.0
+      enabled: yes
+      baseurl: "https://repo.mongodb.org/yum/redhat/7/mongodb-org/4.0/x86_64/"
+      gpgkey: "https://www.mongodb.org/static/pgp/server-4.0.asc"
+      gpgcheck: no
+  when: ansible_distribution == 'CentOS'

@@ -1,0 +1,38 @@
+---
+#run from dir ansible roles
+#ansible-playbook -i inventory.txt tasks/main_upgrade.yml  --extra-vars "version=3.6.10 root_user=root root_pass=password"  -vvv  -e "debug=True"
+- name: upgrade mongo
+  hosts: mongo
+  become: true
+  tasks:
+      - name: check if master
+        shell:  mongo --quiet {{ansible_ssh_host}} -u "{{ root_user }}" -p "{{ root_pass }}" --authenticationDatabase admin --eval 'db.isMaster().ismaster'
+        register: bool_isPrimary
+      
+      #add all relevent mongo repo
+      - include_tasks: add_mongo_repo.yml
+
+      #change mongo protocol version when upgrading from 3.6 to 4.0
+      - name: change protocol version
+        command:  "mongo --quiet {{ansible_ssh_host}} -u {{ root_user }} -p {{ root_pass }} --authenticationDatabase admin --eval 'cfg = rs.conf();cfg.protocolVersion=1;rs.reconfig(cfg);'"
+        when: version.find("4.0.") != -1 and  bool_isPrimary.stdout == 'true'
+
+      #upgrades all the relevent rpms
+      - include_tasks: mongo_rpm_install.yml
+        when: bool_isPrimary.stdout == 'false'
+      
+
+#check all were upgraded otherwise fail
+- name: check all mongo were upgraded
+  hosts: mongo
+  become: true
+  tasks:
+      - include_tasks: validate_mongo_version.yml
+
+#change compatibilty
+- name: change compatibilty
+  hosts: mongo
+  become: true
+  tasks:
+      - include_tasks: update_config.yml
+        when: bool_isPrimary.stdout == 'true'
