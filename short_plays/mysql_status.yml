@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: masters
   remote_user: jonyc
   become: yes
   become_user: root
@@ -21,9 +21,20 @@
     check_mode: no
     register: sockets
 
-  - name: mysql stat
-    mysql_replication:
+  # - pip:
+  #     name: PyMySQL
+
+  # - name: mysql stat
+  #   mysql_replication:
+  #     login_password: "{{password}}"
+  #     login_user: "root"
+  #     login_unix_socket: "{{sockets.stdout}}"
+  #     mode: getslave
+
+  - mysql_user:
+      name: dbschema
+      host: '192.168.%'
+      state: absent
       login_password: "{{password}}"
-      login_user: "root"
+      login_user: root
       login_unix_socket: "{{sockets.stdout}}"
-      mode: getslave

@@ -1,0 +1,16 @@
+---
+- hosts: fix
+  remote_user: jonyc
+  become: yes
+  become_user: root
+  gather_facts: false
+  tasks:
+    - copy:
+        src: /tmp/ssl/{{item}}
+        dest: /etc/sensu/ssl/
+        mode: 0640
+      with_items:
+        ['key.pem','cert.pem']
+    - systemd:
+        name: sensu-client
+        state: restarted
