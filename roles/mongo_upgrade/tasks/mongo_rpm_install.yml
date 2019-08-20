@@ -1,13 +1,4 @@
 ---
-- name: get mongo version
-  shell:  /usr/bin/mongod --version | grep 'db version' |awk -F 'v' '{print $3}'
-  register: mongo_version
-
-- name: check mongo version upgraded
-  fail:
-    msg: The host {{ansible_ssh_host}} is already upgraded to {{version}}
-  when: mongo_version.stdout == version
-
 - name: lock chef
   copy:
     content: "MongoDB Upgrade: chef locked until further notice."
@@ -19,7 +10,7 @@
   tags: skip
 
 - name: find mongo services on the node
-  shell: systemctl list-unit-files --type service --state enabled,generated | grep mongodb | awk '{print $1}'
+  shell: systemctl list-unit-files --type service --state enabled,generated | grep mongodb_ | awk '{print $1}'
   register: mongo_service
 
 - name: Stop Mongo custom service
@@ -28,6 +19,12 @@
     state: stopped
     no_block: no
      
+- name: Confirm Mongo Custom Service is down
+  command: service {{ mongo_service.stdout }} status
+  register: agent_status
+  failed_when: "'Active: active (running)' in agent_status.stdout"
+  changed_when: False
+
 
 - name: upgrading mongo version
   yum:
@@ -50,6 +47,19 @@
     state: started
     no_block: no
 
+- name: Confirm Mongo Custom Service is up
+  command: service {{ mongo_service.stdout }} status
+  register: agent_status
+  failed_when: "'Active: inactive (dead)' in agent_status.stdout or 'Active: failed'  in agent_status.stdout"
+  changed_when: False
+
+
+- name: Check replica returned to replication
+  command: mongo --quiet {{ansible_ssh_host}} -u "{{ root_user }}" -p "{{ root_pass }}" --authenticationDatabase admin --eval "rs.slaveOk();rs.status()['members'].forEach(function(member) {print(member['stateStr']);})" 
+  register: replica_status
+  until: "'not reachable/healthy' not in replica_status.stdout  and replica_status.rc == 0 "
+  retries: 10
+  delay: 10
 
 
 

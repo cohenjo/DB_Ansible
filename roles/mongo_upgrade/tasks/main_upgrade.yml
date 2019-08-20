@@ -1,38 +1,88 @@
 ---
 #run from dir ansible roles
-#ansible-playbook -i inventory.txt tasks/main_upgrade.yml  --extra-vars "version=3.6.10 root_user=root root_pass=password"  -vvv  -e "debug=True"
-- name: upgrade mongo
-  hosts: mongo
+#ansible-playbook -i inventory.txt tasks/main_upgrade.yml  --extra-vars "version=3.4.19 root_user=root root_pass=XXXXX"  -v  -e "debug=True" --step
+#ansible-playbook -i inventory.txt tasks/main_upgrade.yml  --extra-vars "version=3.6.10 root_user=root root_pass=XXXXXX"  -vvv  -e "debug=True" --step
+#ansible-playbook -i inventory.txt tasks/main_upgrade.yml  --extra-vars "version=4.0.10 root_user=root root_pass=XXXXXX"  -vvv  -e "debug=True" --step
+- name: prestep - change protocol for version 4
+  hosts: rest
+  serial: 1
   become: true
   tasks:
       - name: check if master
         shell:  mongo --quiet {{ansible_ssh_host}} -u "{{ root_user }}" -p "{{ root_pass }}" --authenticationDatabase admin --eval 'db.isMaster().ismaster'
         register: bool_isPrimary
       
-      #add all relevent mongo repo
-      - include_tasks: add_mongo_repo.yml
-
       #change mongo protocol version when upgrading from 3.6 to 4.0
+      #todo run 1 time
       - name: change protocol version
         command:  "mongo --quiet {{ansible_ssh_host}} -u {{ root_user }} -p {{ root_pass }} --authenticationDatabase admin --eval 'cfg = rs.conf();cfg.protocolVersion=1;rs.reconfig(cfg);'"
         when: version.find("4.0.") != -1 and  bool_isPrimary.stdout == 'true'
 
+
+- name: upgrade mongo
+  hosts: rest
+  serial: 1
+  any_errors_fatal: true
+  become: true
+  tasks:
+      - name: check if master
+        shell:  mongo --quiet {{ansible_ssh_host}} -u "{{ root_user }}" -p "{{ root_pass }}" --authenticationDatabase admin --eval 'db.isMaster().ismaster'
+        register: bool_isPrimary
+      
+      - name: get mongo version
+        shell:  /usr/bin/mongod --version | grep 'db version' |awk -F 'v' '{print $3}'
+        register: mongo_version
+
+      #add all relevent mongo repo
+      - include_tasks: add_mongo_repo.yml
+
       #upgrades all the relevent rpms
       - include_tasks: mongo_rpm_install.yml
-        when: bool_isPrimary.stdout == 'false'
+        when: bool_isPrimary.stdout == 'false' and mongo_version.stdout != version
+
       
 
 #check all were upgraded otherwise fail
 - name: check all mongo were upgraded
-  hosts: mongo
+  hosts: all
+  serial: 1
+  any_errors_fatal: true
   become: true
   tasks:
       - include_tasks: validate_mongo_version.yml
 
-#change compatibilty
-- name: change compatibilty
-  hosts: mongo
+#change compatibilty and version conf
+- name: change compatibilty and version conf
+  hosts: all
+  serial: 1
+  any_errors_fatal: true
   become: true
   tasks:
+      - name: check if master
+        shell:  mongo --quiet {{ansible_ssh_host}} -u "{{ root_user }}" -p "{{ root_pass }}" --authenticationDatabase admin --eval 'db.isMaster().ismaster'
+        register: bool_isPrimary
+
       - include_tasks: update_config.yml
         when: bool_isPrimary.stdout == 'true'
+
+
+  #Check compatibilty changed 
+- name: change compatibilty changed 
+  hosts: all
+  serial: 1
+  any_errors_fatal: true
+  become: true
+  tasks:
+    - name: mongo log file 
+      find:
+        paths: /var/log/mongodb
+        patterns: "mongodb_*.log"
+      register: files_matched
+
+    - name: check compatibilty has changed for next version
+      shell: grep "setting featureCompatibilityVersion to {{ version | regex_replace('.'+version.split('.')[-1],'') }}" "{{ item.path }}" | wc -l
+      register: line_count
+      with_items: "{{ files_matched.files }}"
+      failed_when: line_count.stdout|int  == 0
+
+
