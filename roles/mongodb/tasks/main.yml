@@ -1,0 +1,129 @@
+---
+# tasks file for mongoDB setup
+---
+# This role deploys the mongod processes and sets up the replication set.
+- include: host.yml
+  tags: [host]
+
+- name: Install the mongodb package
+  package: name={{ item }} state=latest
+  with_items:
+    - mongodb-org
+    - mongodb-org-server
+    - mongodb-org-shell
+    - mongodb-org-tools
+    - bc
+    - python-pip
+    - pymongo
+
+- name: Create the mongo user
+  user: name={{ mongodb_user }} comment="Mongo user"
+
+- name: Create the data directory
+  file: path={{ mongodb_datadir_prefix }}/db owner={{ mongodb_user }} group={{ mongodb_user }} state=directory
+
+- name: create log directory for mongodb
+  file: path=/var/log/mongo state=directory owner={{ mongodb_user }} group={{ mongodb_user }}
+
+- name: create run directory for mongodb
+  file: path=/var/run/mongo state=directory owner={{ mongodb_user }} group={{ mongodb_user }}
+
+- name: Copy the keyfile for authentication
+  copy: src=secret dest={{ mongodb_datadir_prefix }}/keyfile owner={{ mongodb_user }} group={{ mongodb_user }} mode=0400
+
+- name: Create the mongodb configuration file
+  template: src=mongod.conf.j2 dest=/etc/mongod.conf
+
+- name: Add systemd configuration
+  copy: src=mongodb.service dest=/lib/systemd/system/mongodb.service owner=root group=root mode=0640
+
+- name: Add symlink for systemd
+  file: src=/lib/systemd/system/mongodb.service dest=/etc/systemd/system/multi-user.target.wants/mongodb.service state=link
+
+- name: reload the systemd daemon and start mongodb
+  systemd:
+    name: mongodb
+    state: started
+    daemon_reload: yes
+
+- name: Create the file to initialize the mongod replica set
+  template: src=repset_init.j2 dest=/tmp/repset_init.js
+
+- name: Initialize the replication set
+  shell: /usr/bin/mongo admin /tmp/repset_init.js
+  run_once: true
+  ignore_errors: true
+  tags: [repset_init]
+
+- include: auth_initialization.yml
+  tags: [users]
+
+- name: create /etc/security/limits.d/mongodb.conf
+  copy:
+    src: security-mongodb.conf
+    dest: /etc/security/limits.d/mongodb.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart mongodb
+
+- name: Set vm.dirty_ratio
+  sysctl:
+    name: vm.dirty_ratio
+    value: '15'
+    state: present
+
+- name: Set vm.dirty_background_ratio
+  sysctl:
+    name: vm.dirty_background_ratio
+    value: '5'
+    state: present
+
+- name: Set vm.swappiness
+  sysctl:
+    name: vm.swappiness
+    value: '10'
+    state: present
+
+- name: Set net.core.somaxconn
+  sysctl:
+    name: net.core.somaxconn
+    value: '4096'
+    state: present
+
+- name: Set net.ipv4.tcp_fin_timeout
+  sysctl:
+    name: net.ipv4.tcp_fin_timeout
+    value: '30'
+    state: present
+
+- name: net.ipv4.tcp_keepalive_intvl
+  sysctl:
+    name: net.ipv4.tcp_keepalive_intvl
+    value: '30'
+    state: present
+
+- name: net.ipv4.tcp_keepalive_time
+  sysctl:
+    name: net.ipv4.tcp_keepalive_time
+    value: '120'
+    state: present
+
+- name: net.ipv4.tcp_max_syn_backlog
+  sysctl:
+    name: net.ipv4.tcp_max_syn_backlog
+    value: '4096'
+    state: present
+
+- name: Ensure mongodb is running and and enabled to start automatically on reboots
+  systemd:
+    name: mongodb
+    enabled: yes
+    state: started
+
+- name: install ntp
+  apt:
+    name: ntp
+    state: present
+    update_cache: yes

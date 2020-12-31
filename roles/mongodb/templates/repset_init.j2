@@ -1,0 +1,31 @@
+
+rs.initiate();
+sleep(10000);
+
+db.createUser(
+  {
+   user: "myUserAdmin",
+   pwd: "abc123",
+   roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
+ }
+);
+db.auth("myUserAdmin", "abc123");
+
+db.createRole( { role: "scriptExecutor", privileges:[ { resource: { anyResource:true }, actions: [ "anyAction" ] },], roles:[]});
+db.createUser({"user" : "admin", "pwd" : "admin", "roles" : [{"role" : "scriptExecutor", "db" : "admin"}, {"role" : "userAdminAnyDatabase", "db" : "admin"}, {"role" : "root", "db" : "admin"}]}, { w: "majority" , wtimeout: 5000 });
+
+db.auth("admin", "admin");
+
+rs.reconfig(
+{
+  "_id" : "SAW",
+  "members" : [
+    {% for host in mongo_group %}
+     {
+       "_id" : {{loop.index0}},
+       "host" : "{{ host }}:{{ mongodb_net_port }}"
+     },
+     {% endfor %}
+  ]
+});
+printjson(rs.status());

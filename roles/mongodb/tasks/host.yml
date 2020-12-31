@@ -1,0 +1,29 @@
+---
+- name: sysctl configuration
+  sysctl:
+    name: "{{item.name}}"
+    value: "{{ item.value }}"
+    state: present
+  with_items:
+    - {name: "vm.overcommit_memory", value: 0 }
+    - {name: "net.ipv4.tcp_keepalive_time", value: 300 }
+#
+# - name: Create udev rules
+#   copy: src=99-mongo.rules dest=/etc/udev/rules.d/99-mongo.rules
+#
+# - name: trigger the new rules on the xvdb device
+#   shell: udevadm trigger -v -s 'block' --name-match=/dev/xvdb
+#
+# - name: create directory for no-thp profile
+#   file: path=/etc/tuned/no-thp state=directory
+#
+# - name: Disable Transparent Huge Pages enabled using tuned
+#   copy: src=tuned.conf dest=/etc/tuned/no-thp/tuned.conf
+#
+# - name: Disable Transparent Huge Pages defrag using tuned
+#   copy: src=disable_defrag.sh dest=/etc/tuned/no-thp/disable_defrag.sh mode=755
+#
+# - name: trigger tuned
+#   shell: tuned-adm profile no-thp
+# Disable Transparent Huge Pages
+# see: https://docs.mongodb.com/v3.2/tutorial/transparent-huge-pages/#configure-thp-tuned
