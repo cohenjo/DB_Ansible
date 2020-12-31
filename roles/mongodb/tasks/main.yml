@@ -15,8 +15,9 @@
     state: present
 
 - name: create run directory for mongodb
-  file: path=/var/run/mongo
-  state: directory
+  file:
+    path: /var/run/mongo
+    state: directory
 
 - name: Install the mongodb package
   package: name={{ item }} state=latest
