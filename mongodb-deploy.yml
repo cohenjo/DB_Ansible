@@ -3,3 +3,4 @@
   hosts: all
   roles:
     - mongodb
+    - { role: mongodb, become: yes, become_user: root }
