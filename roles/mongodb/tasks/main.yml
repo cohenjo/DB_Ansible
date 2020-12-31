@@ -13,13 +13,15 @@
   apt_repository:
     repo: deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse
     state: present
-    filename: mongodb-org-4.2
+
+- name: create run directory for mongodb
+  file: path=/var/run/mongo
 
 - name: Install the mongodb package
   package: name={{ item }} state=latest
   with_items:
     - bc
-    # - mongodb-org
+    - mongodb-org
     - mongodb-org-server
     - mongodb-org-shell
     - mongodb-org-mongos
