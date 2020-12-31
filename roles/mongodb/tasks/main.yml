@@ -19,7 +19,7 @@
   package: name={{ item }} state=latest
   with_items:
     - bc
-    - mongodb-org
+    # - mongodb-org
     - mongodb-org-server
     - mongodb-org-shell
     - mongodb-org-mongos
