@@ -1,7 +1,7 @@
 ---
 - name: install
   hosts: all
-  var:
+  vars:
     mongo_group: "{{ groups['all'] }}"
   roles:
     - mongodb
