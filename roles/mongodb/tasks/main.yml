@@ -1,6 +1,5 @@
 ---
 # tasks file for mongoDB setup
----
 # This role deploys the mongod processes and sets up the replication set.
 - include: host.yml
   tags: [host]
