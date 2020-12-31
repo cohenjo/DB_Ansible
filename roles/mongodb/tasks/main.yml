@@ -37,8 +37,8 @@
   file:
     path: /var/run/mongo
     state: directory
-    owner: { { mongodb_user } }
-    group: { { mongodb_user } }
+    owner: '{{ mongodb_user }}'
+    group: '{{ mongodb_user }}'
 # - name: create run directory for mongodb
 #   file: path=/var/run/mongo state=directory owner={{ mongodb_user }} group={{ mongodb_user }}
 
