@@ -4,6 +4,17 @@
 - include: host.yml
   tags: [host]
 
+- name: Add an Apt signing key for mongodb
+  apt_key:
+    url: https://www.mongodb.org/static/pgp/server-4.2.asc
+    state: present
+
+- name: Add mongodb repository into sources list
+  apt_repository:
+    repo: deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse
+    state: present
+    filename: mongodb-org-4.2
+
 - name: Install the mongodb package
   package: name={{ item }} state=latest
   with_items:
