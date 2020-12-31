@@ -14,15 +14,15 @@
     repo: deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse
     state: present
 
-# - name: Install the mongodb package
-#   package: name={{ item }} state=latest
-#   with_items:
-#     - bc
-#     - mongodb-org
-#     - mongodb-org-server
-#     - mongodb-org-shell
-#     - mongodb-org-mongos
-#     - mongodb-org-tools
+- name: Install the mongodb package
+  package: name={{ item }} state=latest
+  with_items:
+    - bc
+    - mongodb-org
+    - mongodb-org-server
+    - mongodb-org-shell
+    - mongodb-org-mongos
+    - mongodb-org-tools
 
 - name: Create the mongo user
   user: name={{ mongodb_user }} comment="Mongo user"
