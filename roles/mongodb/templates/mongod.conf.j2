@@ -2,7 +2,7 @@
 # {{ ansible_managed }}
 
 net:
-  bindIp: {{ inventory_hostname }},127.0.0.1
+  bindIp: 0.0.0.0
   ipv6: {{ mongodb_net_ipv6 | to_nice_json }}
   maxIncomingConnections: {{ mongodb_net_maxconns }}
   port: {{ mongodb_net_port }}
