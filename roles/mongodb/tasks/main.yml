@@ -18,13 +18,14 @@
 - name: Install the mongodb package
   package: name={{ item }} state=latest
   with_items:
-    - mongodb-org
-    - mongodb-org-server
-    - mongodb-org-shell
-    - mongodb-org-tools
     - bc
     - python-pip
     - pymongo
+    - mongodb-org
+    - mongodb-org-server
+    - mongodb-org-shell
+    - mongodb-org-mongos
+    - mongodb-org-tools
 
 - name: Create the mongo user
   user: name={{ mongodb_user }} comment="Mongo user"
