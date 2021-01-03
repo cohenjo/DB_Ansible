@@ -1,0 +1,78 @@
+---
+# - name: Move back mongod.conf
+#   template: src=mongod_init.conf.j2 dest=/etc/mongod.conf owner=root group=root mode=0644
+#
+# - name: Restart mongodb service
+#   service: name={{ mongodb_daemon_name }} state=restarted
+#   when: mongodb_manage_service
+#
+# - name: wait MongoDB port is listening
+#   wait_for: host=127.0.0.1 port="{{ mongodb_net_port }}" delay=5 state=started
+#
+# - name: get pid of mongodb for non daemon mode
+#   shell: "pidof mongod"
+#   register: pidof_mongod
+#   when: mongodb_manage_service == false
+#   ignore_errors: yes
+#
+# - name: start mongodb daemon
+#   shell: "LC_ALL=C /usr/bin/mongod --config /etc/mongod.conf --fork"
+#   when: mongodb_manage_service == false and pidof_mongod.rc == 1
+
+- name: create admin users
+  mongodb_user:
+    database: admin
+    login_user: '{{ mongodb_user_admin_name }}'
+    login_password: '{{ mongodb_user_admin_password }}'
+    name: '{{ item.name }}'
+    password: '{{ item.password }}'
+    update_password: "{{ mongodb_user_update_password | default('always') }}"
+    roles: '{{ item.roles }}'
+    login_port: '{{ mongodb_net_port | default(27017) }}'
+    replica_set: '{{ mongodb_replication_replset }}'
+  with_items:
+    - {
+        name: '{{ mongodb_user_admin_name }}',
+        password: '{{ mongodb_user_admin_password }}',
+        roles: 'userAdminAnyDatabase',
+      }
+    - {
+        name: '{{ mongodb_root_backup_name }}',
+        password: '{{ mongodb_root_backup_password }}',
+        roles: 'backup,clusterMonitor',
+      }
+    - {
+        name: '{{ mongodb_root_admin_name }}',
+        password: '{{ mongodb_root_admin_password }}',
+        roles: 'root',
+      }
+    - {
+        name: 'maas_admin',
+        password: 'maas_admin_123',
+        roles: 'scriptExecutor,dbAdminAnyDatabase,readWriteAnyDatabase',
+      }
+  no_log: true
+#
+# - name: Move back mongod.conf
+#   template: src=mongod.conf.j2 dest=/etc/mongod.conf owner=root group=root mode=0644
+
+# - name: Restart mongodb service
+#   service: name={{ mongodb_daemon_name }} state=restarted
+#   when: mongodb_manage_service
+
+- name: create normal users with replicaset
+  mongodb_user:
+    database: '{{ item.database }}'
+    name: '{{ item.name }}'
+    password: '{{ item.password }}'
+    update_password: "{{ mongodb_user_update_password | default('always')  }}"
+    roles: '{{ item.roles }}'
+    login_user: '{{ mongodb_user_admin_name }}'
+    login_password: '{{ mongodb_user_admin_password }}'
+    login_port: '{{ mongodb_login_port|default(27017) }}'
+    login_host: "{{ mongodb_login_host|default('localhost') }}"
+    replica_set: '{{ mongodb_replication_replset }}'
+  with_items:
+    - '{{ mongodb_users | default([]) }}'
+  no_log: true
+  tags: [mongodb]

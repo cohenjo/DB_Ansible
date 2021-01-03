@@ -9,7 +9,7 @@ net:
 
 processManagement:
   fork: {{ mongodb_processmanagement_fork | to_nice_json}}
-  pidFilePath: /var/run/mongo/mongod-{{ inventory_hostname }}.pid
+  pidFilePath: /var/run/mongodb/mongod.pid
 
 security:
   authorization: {{ mongodb_security_authorization }}

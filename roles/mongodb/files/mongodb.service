@@ -1,10 +1,16 @@
 [Unit]
 Description=An object/document-oriented database
 Documentation=man:mongod(1)
+Wants=network.target
+After=network.target
 
 [Service]
+Type=forking
+PIDFile=/var/run/mongodb/mongod.pid
 User=mongo
 ExecStart=/bin/mongod --config /etc/mongod.conf
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
 # (file size)
 LimitFSIZE=infinity
 # (cpu time)

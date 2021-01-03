@@ -35,12 +35,12 @@
 
 - name: create run directory for mongodb
   file:
-    path: /var/run/mongo
+    path: /var/run/mongodb
     state: directory
     owner: '{{ mongodb_user }}'
     group: '{{ mongodb_user }}'
 # - name: create run directory for mongodb
-#   file: path=/var/run/mongo state=directory owner={{ mongodb_user }} group={{ mongodb_user }}
+#   file: path=/var/run/mongodb state=directory owner={{ mongodb_user }} group={{ mongodb_user }}
 
 - name: Copy the keyfile for authentication
   copy: src=secret dest={{ mongodb_datadir_prefix }}/keyfile owner={{ mongodb_user }} group={{ mongodb_user }} mode=0400
