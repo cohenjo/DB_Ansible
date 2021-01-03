@@ -3,7 +3,6 @@
   hosts: all
   vars:
     mongo_group: "{{ groups['all'] }}"
-    ansible_port: 23
   roles:
     - mongodb
     - { role: mongodb, become: yes, become_user: root }
