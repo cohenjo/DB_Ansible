@@ -60,19 +60,19 @@
 #   service: name={{ mongodb_daemon_name }} state=restarted
 #   when: mongodb_manage_service
 
-- name: create normal users with replicaset
-  mongodb_user:
-    database: '{{ item.database }}'
-    name: '{{ item.name }}'
-    password: '{{ item.password }}'
-    update_password: "{{ mongodb_user_update_password | default('always')  }}"
-    roles: '{{ item.roles }}'
-    login_user: '{{ mongodb_user_admin_name }}'
-    login_password: '{{ mongodb_user_admin_password }}'
-    login_port: '{{ mongodb_login_port|default(27017) }}'
-    login_host: "{{ mongodb_login_host|default('localhost') }}"
-    replica_set: '{{ mongodb_replication_replset }}'
-  with_items:
-    - '{{ mongodb_users | default([]) }}'
-  no_log: true
-  tags: [mongodb]
+# - name: create normal users with replicaset
+#   mongodb_user:
+#     database: '{{ item.database }}'
+#     name: '{{ item.name }}'
+#     password: '{{ item.password }}'
+#     update_password: "{{ mongodb_user_update_password | default('always')  }}"
+#     roles: '{{ item.roles }}'
+#     login_user: '{{ mongodb_user_admin_name }}'
+#     login_password: '{{ mongodb_user_admin_password }}'
+#     login_port: '{{ mongodb_login_port|default(27017) }}'
+#     login_host: "{{ mongodb_login_host|default('localhost') }}"
+#     replica_set: '{{ mongodb_replication_replset }}'
+#   with_items:
+#     - '{{ mongodb_users | default([]) }}'
+#   no_log: true
+#   tags: [mongodb]
