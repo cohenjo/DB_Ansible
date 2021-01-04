@@ -56,7 +56,7 @@
 
 - name: reload the systemd daemon and start mongodb
   systemd:
-    name: mongodb
+    name: mongod
     state: started
     daemon_reload: yes
 

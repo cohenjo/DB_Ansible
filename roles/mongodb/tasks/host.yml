@@ -1,12 +1,19 @@
 ---
 - name: sysctl configuration
   sysctl:
-    name: "{{item.name}}"
-    value: "{{ item.value }}"
+    name: '{{item.name}}'
+    value: '{{ item.value }}'
     state: present
   with_items:
-    - {name: "vm.overcommit_memory", value: 0 }
-    - {name: "net.ipv4.tcp_keepalive_time", value: 300 }
+    - { name: 'vm.overcommit_memory', value: 0 }
+    - { name: 'vm.dirty_ratio', value: 15 }
+    - { name: 'vm.dirty_background_ratio', value: 5 }
+    - { name: 'vm.swappiness', value: 10 }
+    - { name: 'net.core.somaxconn', value: 4096 }
+    - { name: 'net.ipv4.tcp_fin_timeout', value: 30 }
+    - { name: 'net.ipv4.tcp_keepalive_intvl', value: 30 }
+    - { name: 'net.ipv4.tcp_keepalive_time', value: 120 }
+    - { name: 'net.ipv4.tcp_max_syn_backlog', value: 4096 }
 #
 # - name: Create udev rules
 #   copy: src=99-mongo.rules dest=/etc/udev/rules.d/99-mongo.rules
