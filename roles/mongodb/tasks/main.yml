@@ -18,6 +18,7 @@
   package: name={{ item }} state=latest
   with_items:
     - bc
+    - ntp
     - mongodb-org
     - mongodb-org-server
     - mongodb-org-shell
@@ -71,7 +72,6 @@
 
 - include: auth_initialization.yml
   tags: [users]
-
 # - name: create /etc/security/limits.d/mongodb.conf
 #  copy:
 #    src: security-mongodb.conf
@@ -82,8 +82,3 @@
 #  notify:
 #    - restart mongodb
 
-- name: install ntp
-  apt:
-    name: ntp
-    state: present
-    update_cache: yes
