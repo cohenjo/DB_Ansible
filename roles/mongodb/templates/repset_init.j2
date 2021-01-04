@@ -5,16 +5,16 @@ sleep(10000);
 db.createUser(
   {
    user: "myUserAdmin",
-   pwd: "abc123",
+   pwd: "{{ mongodb_user_admin_password }}",
    roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
  }
 );
-db.auth("myUserAdmin", "abc123");
+db.auth("myUserAdmin", "{{ mongodb_user_admin_password }}");
 
 db.createRole( { role: "scriptExecutor", privileges:[ { resource: { anyResource:true }, actions: [ "anyAction" ] },], roles:[]});
 db.createUser({"user" : "admin", "pwd" : "admin", "roles" : [{"role" : "scriptExecutor", "db" : "admin"}, {"role" : "userAdminAnyDatabase", "db" : "admin"}, {"role" : "root", "db" : "admin"}]}, { w: "majority" , wtimeout: 5000 });
 
-db.auth("admin", "admin");
+db.auth("admin", "{{ mongodb_user_admin_password }}");
 
 rs.reconfig(
 {
